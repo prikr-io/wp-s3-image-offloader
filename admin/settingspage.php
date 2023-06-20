@@ -5,30 +5,30 @@
  * at http://jeremyhixon.com/wp-tools/option-page/
  */
 
-class ImageOffloaderSettingsPage
+class WpImageOffloader
 {
-  private $image_offloader_options;
+  private $wps3_image_offloader_options;
 
   public function __construct()
   {
-    add_action('admin_menu', array($this, 'image_offloader_add_plugin_page'));
-    add_action('admin_init', array($this, 'image_offloader_page_init'));
+    add_action('admin_menu', array($this, 'wps3_image_offloader_add_plugin_page'));
+    add_action('admin_init', array($this, 'wps3_image_offloader_page_init'));
   }
 
-  public function image_offloader_add_plugin_page()
+  public function wps3_image_offloader_add_plugin_page()
   {
     add_options_page(
       'Image Offloader', // page_title
       'Image Offloader', // menu_title
       'manage_options', // capability
       'image-offloader', // menu_slug
-      array($this, 'image_offloader_create_admin_page') // function
+      array($this, 'wps3_image_offloader_create_admin_page') // function
     );
   }
 
-  public function image_offloader_create_admin_page()
+  public function wps3_image_offloader_create_admin_page()
   {
-    $this->image_offloader_options = get_option('image_offloader_option_name'); ?>
+    $this->wps3_image_offloader_options = get_option('wps3_image_offloader_option_name'); ?>
 
     <div class="wrap">
       <h2>Image Offloader</h2>
@@ -37,109 +37,130 @@ class ImageOffloaderSettingsPage
 
       <form method="post" action="options.php">
         <?php
-        settings_fields('image_offloader_option_group');
-        do_settings_sections('image-offloader-admin');
+        settings_fields('wps3_image_offloader_option_group');
+        do_settings_sections('wps3-image-offloader-admin');
         submit_button();
         ?>
       </form>
     </div>
 <?php }
 
-  public function image_offloader_page_init()
+  public function wps3_image_offloader_page_init()
   {
     register_setting(
-      'image_offloader_option_group', // option_group
-      'image_offloader_option_name', // option_name
-      array($this, 'image_offloader_sanitize') // sanitize_callback
+      'wps3_image_offloader_option_group', // option_group
+      'wps3_image_offloader_option_name', // option_name
+      array($this, 'wps3_image_offloader_sanitize') // sanitize_callback
     );
 
     add_settings_section(
-      'image_offloader_setting_section', // id
+      'wps3_image_offloader_setting_section', // id
       'Settings', // title
-      array($this, 'image_offloader_section_info'), // callback
-      'image-offloader-admin' // page
+      array($this, 'wps3_image_offloader_section_info'), // callback
+      'wps3-image-offloader-admin' // page
     );
 
     add_settings_field(
-      'activate_s3_offloading', // id
-      'Activate offloading', // title
-      array($this, 'activate_s3_offloading_callback'), // callback
-      'image-offloader-admin', // page
-      'image_offloader_setting_section' // section
+      'wps3_activate_offloading', // id
+      'Activate bucket', // title
+      array($this, 'wps3_activate_offloading_callback'), // callback
+      'wps3-image-offloader-admin', // page
+      'wps3_image_offloader_setting_section' // section
     );
 
     add_settings_field(
-      'bucket_name', // id
+      'wps3_bucket_name', // id
       'Bucket name', // title
-      array($this, 'bucket_name_callback'), // callback
-      'image-offloader-admin', // page
-      'image_offloader_setting_section' // section
+      array($this, 'wps3_bucket_name_callback'), // callback
+      'wps3-image-offloader-admin', // page
+      'wps3_image_offloader_setting_section' // section
     );
 
     add_settings_field(
-      'bucket_region', // id
+      'wps3_bucket_region', // id
       'Bucket region', // title
-      array($this, 'bucket_region_callback'), // callback
-      'image-offloader-admin', // page
-      'image_offloader_setting_section' // section
+      array($this, 'wps3_bucket_region_callback'), // callback
+      'wps3-image-offloader-admin', // page
+      'wps3_image_offloader_setting_section' // section
+    );
+
+    add_settings_field(
+      'wps3_remove_images', // id
+      'Remove images', // title
+      array($this, 'wps3_remove_images_callback'), // callback
+      'wps3-image-offloader-admin', // page
+      'wps3_image_offloader_setting_section' // section
     );
   }
 
-  public function image_offloader_sanitize($input)
+  public function wps3_image_offloader_sanitize($input)
   {
     $sanitary_values = array();
-    if (isset($input['activate_s3_offloading'])) {
-      $sanitary_values['activate_s3_offloading'] = $input['activate_s3_offloading'];
+    if (isset($input['wps3_activate_offloading'])) {
+      $sanitary_values['wps3_activate_offloading'] = $input['wps3_activate_offloading'];
     }
 
-    if (isset($input['bucket_name'])) {
-      $sanitary_values['bucket_name'] = sanitize_text_field($input['bucket_name']);
+    if (isset($input['wps3_bucket_name'])) {
+      $sanitary_values['wps3_bucket_name'] = sanitize_text_field($input['wps3_bucket_name']);
     }
 
-    if (isset($input['bucket_region'])) {
-      $sanitary_values['bucket_region'] = sanitize_text_field($input['bucket_region']);
+    if (isset($input['wps3_bucket_region'])) {
+      $sanitary_values['wps3_bucket_region'] = sanitize_text_field($input['wps3_bucket_region']);
+    }
+
+    if (isset($input['wps3_remove_images'])) {
+      $sanitary_values['wps3_remove_images'] = $input['wps3_remove_images'];
     }
 
     return $sanitary_values;
   }
 
-  public function image_offloader_section_info()
+  public function wps3_image_offloader_section_info()
   {
   }
 
-  public function activate_s3_offloading_callback()
+  public function wps3_activate_offloading_callback()
   {
     printf(
-      '<input type="checkbox" name="image_offloader_option_name[activate_s3_offloading]" id="activate_s3_offloading" value="activate_s3_offloading" %s> <label for="activate_s3_offloading">Checking this box will activate the offloading of newly uploaded images.</label>',
-      (isset($this->image_offloader_options['activate_s3_offloading']) && $this->image_offloader_options['activate_s3_offloading'] === 'activate_s3_offloading') ? 'checked' : ''
+      '<input type="checkbox" name="wps3_image_offloader_option_name[wps3_activate_offloading]" id="wps3_activate_offloading" value="wps3_activate_offloading" %s> <label for="wps3_activate_offloading">Checking this box will activate the offloading of newly uploaded images.</label>',
+      (isset($this->wps3_image_offloader_options['wps3_activate_offloading']) && $this->wps3_image_offloader_options['wps3_activate_offloading'] === 'wps3_activate_offloading') ? 'checked' : ''
     );
   }
 
-  public function bucket_name_callback()
+  public function wps3_bucket_name_callback()
   {
     printf(
-      '<input class="regular-text" type="text" name="image_offloader_option_name[bucket_name]" id="bucket_name" value="%s">',
-      isset($this->image_offloader_options['bucket_name']) ? esc_attr($this->image_offloader_options['bucket_name']) : ''
+      '<input class="regular-text" type="text" name="wps3_image_offloader_option_name[wps3_bucket_name]" id="wps3_bucket_name" value="%s">',
+      isset($this->wps3_image_offloader_options['wps3_bucket_name']) ? esc_attr($this->wps3_image_offloader_options['wps3_bucket_name']) : ''
     );
   }
 
-  public function bucket_region_callback()
+  public function wps3_bucket_region_callback()
   {
     printf(
-      '<input class="regular-text" type="text" name="image_offloader_option_name[bucket_region]" id="bucket_region" value="%s">',
-      isset($this->image_offloader_options['bucket_region']) ? esc_attr($this->image_offloader_options['bucket_region']) : ''
+      '<input class="regular-text" type="text" name="wps3_image_offloader_option_name[wps3_bucket_region]" id="wps3_bucket_region" value="%s">',
+      isset($this->wps3_image_offloader_options['wps3_bucket_region']) ? esc_attr($this->wps3_image_offloader_options['wps3_bucket_region']) : ''
+    );
+  }
+
+  public function wps3_remove_images_callback()
+  {
+    printf(
+      '<input type="checkbox" name="wps3_image_offloader_option_name[wps3_remove_images]" id="wps3_remove_images" value="wps3_remove_images" %s> <label for="wps3_remove_images">Remove the images from the server after they are uploaded to s3. <b>Warning:</b> this cannot be undone.</label>',
+      (isset($this->wps3_image_offloader_options['wps3_remove_images']) && $this->wps3_image_offloader_options['wps3_remove_images'] === 'wps3_remove_images') ? 'checked' : ''
     );
   }
 }
-
 
 if (is_admin()) {
-  $image_offloader = new ImageOffloaderSettingsPage();
+  $wps3_image_offloader = new WpImageOffloader();
 }
+
 /* 
  * Retrieve this value with:
- * $image_offloader_options = get_option( 'image_offloader_option_name' ); // Array of All Options
- * $activate_s3_offloading = $image_offloader_options['activate_s3_offloading']; // Activate bucket
- * $bucket_name = $image_offloader_options['bucket_name']; // Bucket name
- * $bucket_region = $image_offloader_options['bucket_region']; // Bucket region
+ * $wps3_image_offloader_options = get_option( 'wps3_image_offloader_option_name' ); // Array of All Options
+ * $wps3_activate_offloading = $wps3_image_offloader_options['wps3_activate_offloading']; // wps3 Activate bucket
+ * $wps3_bucket_name = $wps3_image_offloader_options['wps3_bucket_name']; // wps3 Bucket name
+ * $wps3_bucket_region = $wps3_image_offloader_options['wps3_bucket_region']; // wps3 Bucket region
+ * $wps3_remove_images = $wps3_image_offloader_options['wps3_remove_images']; // wps3 Remove images
  */
