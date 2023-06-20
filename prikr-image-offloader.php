@@ -18,8 +18,8 @@ require_once(__DIR__ . '/admin/settingspage.php');
 /**
  * Check wether the plugin is activated through it's own options page.
  */
-$activate_s3_offloading = get_option('image_offloader_option_name')['activate_s3_offloading']; // Activate bucket
-if (!$activate_s3_offloading) return;
+$wps3_activate_offloading = get_option('wps3_image_offloader_option_name')['wps3_activate_offloading']; // Activate bucket
+if (!$wps3_activate_offloading) return;
 
 /**
  * Media offloader to AWS S3.
