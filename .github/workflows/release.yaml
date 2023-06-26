@@ -15,7 +15,7 @@ jobs:
 
       - name: 🛠 Building ZIP file
         run: |
-          zip -r prikr-image-offloader.zip . -x ".git/*" ".github/*" ".gitignore"
+          zip -r prikr-image-offloader.zip . -x
 
       - name: 📂 Sync files
         uses: SamKirkland/web-deploy@v1

@@ -3,7 +3,7 @@
 	"slug" : "prikr-image-offloader",
 	"author" : "<a href='https://prikr.io'>Prikr</a>",
 	"author_profile" : "http://prikr.io",
-	"version" : "1.2",
+	"version" : "1.3",
 	"download_url" : "https://plugin.prikr.io/prikr-image-offloader/prikr-image-offloader.zip",
 	"requires" : "3.0",
 	"tested" : "5.8",
