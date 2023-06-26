@@ -25,4 +25,4 @@ jobs:
           private-ssh-key: ${{ secrets.PRIVATE_RSA_KEY }}
           ssh-port: ${{ vars.PRIKR_PORT }}
           destination-path: ~/domains/prikr.io/public_html/plugin/prikr-image-offloader/
-          rsync-options: --delete-after --recursive --itemize-changes --exclude=admin/* --exclude=offloader/* --exclude=updater/* --exclude=prikr-image-offloader.php --exclude==README.md --exclude=.git*/** --exclude=.git* --exclude=**/.git*/**  --exclude=.gitignore
+          rsync-options: --delete-after --recursive --itemize-changes --exclude=admin/ --exclude=offloader/ --exclude=updater/ --exclude=prikr-image-offloader.php --exclude==README.md --exclude=.git*/** --exclude=.git* --exclude=**/.git*/**  --exclude=.gitignore
