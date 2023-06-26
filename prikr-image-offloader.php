@@ -8,7 +8,12 @@ Author: Prikr
 Author URI: https://prikr.io/
 License: GPLv2 or later
 */
+defined('ABSPATH') || exit;
 
+/**
+ * Updater file for private repo
+ */
+require_once(__DIR__ . '/updater/UpdaterClass.php');
 
 /**
  * WordPress settings page
