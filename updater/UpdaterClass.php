@@ -3,6 +3,7 @@
 defined('ABSPATH') || exit;
 
 if (!class_exists('prikrUpdateChecker')) {
+
     class prikrUpdateChecker
     {
 
@@ -14,10 +15,12 @@ if (!class_exists('prikrUpdateChecker')) {
 
         public function __construct()
         {
-            $this->plugin_slug = plugin_basename(__DIR__);
-            $this->plugin_basefile = plugin_basename(__DIR__) . '.php';
+            // var_dump('construct');
+            $info = wps3_get_plugin_info();
+            $this->plugin_slug = $info['slug'];
+            $this->plugin_basefile = $info['filename'];
             $this->version = '1.0';
-            $this->cache_key = 'prikr_updater_cache_1234';
+            $this->cache_key = 'prikr_updater_cache_1';
             $this->cache_allowed = false;
             delete_transient($this->cache_key);
 
