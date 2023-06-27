@@ -3,7 +3,6 @@
 defined('ABSPATH') || exit;
 
 if (!class_exists('prikrUpdateChecker')) {
-    var_dump(plugin_basename(__DIR__) . '.php');
     class prikrUpdateChecker
     {
 
@@ -15,11 +14,10 @@ if (!class_exists('prikrUpdateChecker')) {
 
         public function __construct()
         {
-            var_dump('UpdaterClass');
             $this->plugin_slug = plugin_basename(__DIR__);
             $this->plugin_basefile = plugin_basename(__DIR__) . '.php';
             $this->version = '1.0';
-            $this->cache_key = 'prikr_updater_cache_1';
+            $this->cache_key = 'prikr_updater_cache_1234';
             $this->cache_allowed = false;
             delete_transient($this->cache_key);
 
