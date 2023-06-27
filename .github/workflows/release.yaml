@@ -16,8 +16,8 @@ jobs:
       - name: 🛠 Building ZIP file
         run: |
           mkdir prikr-image-offloader
-          mv * prikr-image-offloader
-          zip -r prikr-image-offloader.zip .
+          mv !(prikr-image-offloader) prikr-image-offloader/
+          zip -r prikr-image-offloader.zip prikr-image-offloader
 
       - name: 📂 Sync files
         uses: SamKirkland/web-deploy@v1
