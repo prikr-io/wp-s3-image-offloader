@@ -17,6 +17,7 @@ function wps3_get_plugin_info()
         'filename' => plugin_basename(__FILE__),
     ];
     return $info;
+    var_dump($info);
 }
 /**
  * Updater file for private repo
