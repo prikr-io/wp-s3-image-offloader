@@ -15,8 +15,6 @@ jobs:
 
       - name: 🛠 Building ZIP file
         run: |
-          mkdir prikr-image-offloader
-          mv admin/ offloader/ updater/ prikr-image-offloader.php prikr-image-offloader
           zip -r prikr-image-offloader.zip .
 
       - name: 📂 Sync files
