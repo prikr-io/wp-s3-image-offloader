@@ -10,18 +10,10 @@ License: GPLv2 or later
 */
 defined('ABSPATH') || exit;
 
-function wps3_get_plugin_info()
-{
-    $info = [
-        'slug' => plugin_basename(__DIR__),
-        'filename' => plugin_basename(__FILE__),
-    ];
-    return $info;
-}
 /**
  * Updater file for private repo
  */
-require_once(__DIR__ . '/updater/UpdaterClass.php');
+require_once(__DIR__ . '/UpdaterClass.php');
 
 /**
  * WordPress settings page
