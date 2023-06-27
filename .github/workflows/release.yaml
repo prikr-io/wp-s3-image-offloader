@@ -15,7 +15,7 @@ jobs:
 
       - name: 🛠 Building ZIP file
         run: |
-          rsync -av --progress . /prikr-image-offloader --exclude prikr-image-offloader
+          rsync -av --progress . ./prikr-image-offloader --exclude prikr-image-offloader
           zip -r prikr-image-offloader.zip prikr-image-offloader
 
       - name: 📂 Sync files
