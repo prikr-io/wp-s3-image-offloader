@@ -21,7 +21,7 @@ if (!class_exists('prikrUpdateChecker')) {
             var_dump($this->plugin_slug);
             var_dump($this->plugin_basefile);
             $this->version = '1.0';
-            $this->cache_key = 'prikr_updater_cache_1';
+            $this->cache_key = 'prikr_updater_cache_3';
             $this->cache_allowed = false;
             delete_transient($this->cache_key);
 

@@ -13,7 +13,7 @@ defined('ABSPATH') || exit;
 /**
  * Updater file for private repo
  */
-require_once(__DIR__ . '/UpdaterClass.php');
+require_once('UpdaterClass.php');
 
 /**
  * WordPress settings page
