@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Project: twentebestrating
+ * Project: Prikr image offloader
  * File: $(fileName)
  * Author: Koen Dolron
  * Copyright © Prikr 
