@@ -1,0 +1,27 @@
+{
+  "name": "prikr-image-offloader",
+  "version": "2.0",
+  "description": "### TODO:",
+  "main": "index.js",
+  "scripts": {
+    "deploy": "npm run update-version && git push",
+    "update-version": "node ./updater/update-version.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/prikr-io/wp-s3-image-offloader.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/prikr-io/wp-s3-image-offloader/issues"
+  },
+  "homepage": "https://github.com/prikr-io/wp-s3-image-offloader#readme",
+  "dependencies": {
+    "fs": "^0.0.1-security",
+    "jq": "^1.7.2",
+    "path": "^0.12.7"
+  }
+}
