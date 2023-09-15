@@ -1,5 +1,4 @@
 <?php
-require 'MediaOffloaderClass.php';
 if (defined('WP_CLI') && WP_CLI) {
     class WPCLI_Custom_Command
     {
@@ -33,7 +32,7 @@ if (defined('WP_CLI') && WP_CLI) {
             $options = get_option('wps3_image_offloader_option_name'); // Array of All Options
             $bucket_name = $options['wps3_bucket_name']; // Bucket name
             $bucket_region = $options['wps3_bucket_region']; // Bucket region
-            $s3Offloader = new s3MediaOffloader($bucket_name, $bucket_region);
+            $offloader = new s3MediaOffloader($bucket_name, $bucket_region);
 
             do {
                 // Get a batch of images without 's3_url' post meta.
@@ -43,7 +42,7 @@ if (defined('WP_CLI') && WP_CLI) {
                     // Log the IDs of the images.
                     foreach ($images as $image) {
                         WP_CLI::log("Image ID: {$image->ID}");
-                        $s3Offloader->offloadMedia($image->ID);
+                        $offloader->offloadMedia($image->ID);
                     }
                     $offset += $batch_size;
                 } else {
