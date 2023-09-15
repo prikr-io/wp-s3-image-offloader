@@ -38,6 +38,7 @@ if (!$wps3_activate_offloading) return;
  * Media offloader to AWS S3.
  */
 require_once(__DIR__ . '/offloader/MediaOffloaderClass.php');
+require_once(__DIR__ . '/offloader/MediaOffloaderWpCli.php');
 
 /**
  * Filter the Image Attribute functions, to add custom sizes
