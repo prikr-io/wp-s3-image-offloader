@@ -1,28 +1,12 @@
 <?php
 if (defined('WP_CLI') && WP_CLI) {
-    class WPCLI_Custom_Command
+    class s3MediaOffloaderCLI
     {
-
-
         /**
-         * Get images without 's3_url' post meta and log their IDs.
-         *
-         * ## OPTIONS
-         *
-         * [--batch-size=<batch_size>]
-         * : The number of images to process in each batch. Default is 10.
-         *
-         * [--timeout=<timeout>]
-         * : The number of seconds to wait between batches. Default is 5 seconds.
-         *
-         * ## EXAMPLES
-         *
-         *     wp custom-command get-images-without-s3-url
-         *
-         * @param array $args Command arguments.
-         * @param array $assoc_args Command associative arguments.
+         * WP CLI COMMAND
+         * wp offload-images list_missing_images --batch-size=20 --timeout=10
          */
-        public function get_images_without_s3_url($args, $assoc_args)
+        public function list_missing_images($args, $assoc_args)
         {
             $batch_size = isset($assoc_args['batch-size']) ? intval($assoc_args['batch-size']) : 10;
             $timeout = isset($assoc_args['timeout']) ? intval($assoc_args['timeout']) : 5;
@@ -36,7 +20,7 @@ if (defined('WP_CLI') && WP_CLI) {
 
             do {
                 // Get a batch of images without 's3_url' post meta.
-                $images = $this->get_images_without_s3_url_batch($batch_size, $offset);
+                $images = $this->list_missing_images_batch($batch_size, $offset);
 
                 if (!empty($images)) {
                     // Log the IDs of the images.
@@ -63,7 +47,7 @@ if (defined('WP_CLI') && WP_CLI) {
          *
          * @return array|null List of image objects or null if no images found.
          */
-        private function get_images_without_s3_url_batch($batch_size, $offset)
+        private function list_missing_images_batch($batch_size, $offset)
         {
             global $wpdb;
 
@@ -80,5 +64,5 @@ if (defined('WP_CLI') && WP_CLI) {
         }
     }
 
-    WP_CLI::add_command('custom-command', 'WPCLI_Custom_Command');
+    WP_CLI::add_command('offload-images', 's3MediaOffloaderCLI');
 }
