@@ -13,7 +13,7 @@ const packageJsonFile = path.join(__dirname, '..', 'package.json');
 // Read and increment the current version by 0.1
 function incrementVersion(version) {
     const [major, minor] = version.split('.').map(Number);
-    return `${major}.${(minor + 0.1).toFixed(1)}`;
+    return `${major}.${(minor + 1)}`;
 }
 
 // Update the JSON file
