@@ -13,7 +13,7 @@ if (defined('WP_CLI') && WP_CLI) {
             $offset = 0;
 
             // Init the offloader
-            $options = get_option('wps3_image_offloader_option_name'); // Array of All Options
+            $options = get_option('wps3_image_offloader'); // Array of All Options
             $bucket_name = $options['wps3_bucket_name']; // Bucket name
             $bucket_region = $options['wps3_bucket_region']; // Bucket region
             $offloader = new s3MediaOffloader($bucket_name, $bucket_region);
