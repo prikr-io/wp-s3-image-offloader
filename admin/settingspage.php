@@ -83,7 +83,7 @@ class WpImageOffloader
       'wps3-image-offloader-admin', // page
       'wps3_image_offloader_setting_section' // section
     );
-
+    
     add_settings_field(
       'wps3_remove_images', // id
       'Remove images', // title
@@ -91,6 +91,30 @@ class WpImageOffloader
       'wps3-image-offloader-admin', // page
       'wps3_image_offloader_setting_section' // section
     );
+
+    add_settings_section(
+      'wps3_aws_credentials_section', // id
+      'AWS credentials', // title
+      array($this, 'wps3_image_offloader_section_info'), // callback
+      'wps3-image-offloader-admin' // page
+    );
+
+    add_settings_field(
+      'wps3_aws_key', // id
+      'AWS Key', // title
+      array($this, 'wps3_aws_key_callback'), // callback
+      'wps3-image-offloader-admin', // page
+      'wps3_aws_credentials_section' // section
+    );
+
+    add_settings_field(
+      'wps3_aws_secret', // id
+      'AWS Secret', // title
+      array($this, 'wps3_aws_secret_callback'), // callback
+      'wps3-image-offloader-admin', // page
+      'wps3_aws_credentials_section' // section
+    );
+
   }
 
   public function wps3_image_offloader_sanitize($input)
@@ -106,6 +130,14 @@ class WpImageOffloader
 
     if (isset($input['wps3_bucket_region'])) {
       $sanitary_values['wps3_bucket_region'] = sanitize_text_field($input['wps3_bucket_region']);
+    }
+
+    if (isset($input['wps3_aws_key'])) {
+      $sanitary_values['wps3_aws_key'] = sanitize_text_field($input['wps3_aws_key']);
+    }
+
+    if (isset($input['wps3_aws_secret'])) {
+      $sanitary_values['wps3_aws_secret'] = sanitize_text_field($input['wps3_aws_secret']);
     }
 
     if (isset($input['wps3_remove_images'])) {
@@ -140,6 +172,21 @@ class WpImageOffloader
     printf(
       '<input class="regular-text" type="text" name="wps3_image_offloader[wps3_bucket_region]" id="wps3_bucket_region" value="%s">',
       isset($this->wps3_image_offloader_options['wps3_bucket_region']) ? esc_attr($this->wps3_image_offloader_options['wps3_bucket_region']) : ''
+    );
+  }
+
+  public function wps3_aws_key_callback()
+  {
+    printf(
+      '<input class="regular-text" type="text" name="wps3_image_offloader[wps3_aws_key]" id="wps3_aws_key" value="%s">',
+      isset($this->wps3_image_offloader_options['wps3_aws_key']) ? esc_attr($this->wps3_image_offloader_options['wps3_aws_key']) : ''
+    );
+  }
+  public function wps3_aws_secret_callback()
+  {
+    printf(
+      '<input class="regular-text" type="password" name="wps3_image_offloader[wps3_aws_secret]" id="wps3_aws_secret" value="%s">',
+      isset($this->wps3_image_offloader_options['wps3_aws_secret']) ? esc_attr($this->wps3_image_offloader_options['wps3_aws_secret']) : ''
     );
   }
 
