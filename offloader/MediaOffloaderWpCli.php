@@ -1,7 +1,41 @@
 <?php
+require 'vendor/autoload.php';
+
+use Aws\S3\S3Client;
+use Aws\S3\Exception\S3Exception;
+
 if (defined('WP_CLI') && WP_CLI) {
+
     class s3MediaOffloaderCLI
     {
+
+        private $s3Client;
+        private $offloader;
+        
+        public function __construct(){
+           $options = get_option('wps3_image_offloader');
+            $bucket_name = $options['wps3_bucket_name'];
+            $bucket_region = $options['wps3_bucket_region'];
+            $aws_key = $options['wps3_aws_key'];
+            $aws_secret = $options['wps3_aws_secret'];
+            $s3Path = 'images/';
+
+            if (empty($bucket_region) || empty($bucket_name) || empty($aws_key) || empty($aws_secret)) {
+                error_log('wps3 Error: Missing bucket region, bucket name, aws key or aws secret. Please check your settings.');
+                return false;
+            }
+
+            $this->s3Client = new S3Client([
+                'region' => $bucket_region,
+                'version' => 'latest',
+                'credentials' => [
+                    'key' => $aws_key,
+                    'secret' => $aws_secret
+                ],
+            ]);
+
+            $this->offloader = new s3MediaOffloader($this->s3Client, $bucket_name, $s3Path);
+        }
         /**
          * WP CLI COMMAND
          * wp offload-images list_missing_images --batch-size=20 --timeout=10
@@ -12,11 +46,6 @@ if (defined('WP_CLI') && WP_CLI) {
             $timeout = isset($assoc_args['timeout']) ? intval($assoc_args['timeout']) : 5;
             $offset = 0;
 
-            // Init the offloader
-            $options = get_option('wps3_image_offloader'); // Array of All Options
-            $bucket_name = $options['wps3_bucket_name']; // Bucket name
-            $bucket_region = $options['wps3_bucket_region']; // Bucket region
-            $offloader = new s3MediaOffloader($bucket_name, $bucket_region);
 
             do {
                 // Get a batch of images without 's3_url' post meta.
@@ -26,7 +55,7 @@ if (defined('WP_CLI') && WP_CLI) {
                     // Log the IDs of the images.
                     foreach ($images as $image) {
                         WP_CLI::log("Image ID: {$image->ID}");
-                        $offloader->offloadMedia($image->ID);
+                        $this->offloader->offloadMedia($image->ID);
                     }
                     $offset += $batch_size;
                 } else {
