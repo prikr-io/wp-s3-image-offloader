@@ -162,7 +162,7 @@ class WpImageOffloader
   public function wps3_bucket_name_callback()
   {
     printf(
-      '<input class="regular-text" type="text" name="wps3_image_offloader[wps3_bucket_name]" id="wps3_bucket_name" value="%s">',
+      '<input class="regular-text" type="text" name="wps3_image_offloader[wps3_bucket_name]" id="wps3_bucket_name" value="%s" placeholder="e.g. cdn.yourdomain.com">',
       isset($this->wps3_image_offloader_options['wps3_bucket_name']) ? esc_attr($this->wps3_image_offloader_options['wps3_bucket_name']) : ''
     );
   }
@@ -170,7 +170,7 @@ class WpImageOffloader
   public function wps3_bucket_region_callback()
   {
     printf(
-      '<input class="regular-text" type="text" name="wps3_image_offloader[wps3_bucket_region]" id="wps3_bucket_region" value="%s">',
+      '<input class="regular-text" type="text" name="wps3_image_offloader[wps3_bucket_region]" id="wps3_bucket_region" value="%s" placeholder="e.g. eu-central-1">',
       isset($this->wps3_image_offloader_options['wps3_bucket_region']) ? esc_attr($this->wps3_image_offloader_options['wps3_bucket_region']) : ''
     );
   }
