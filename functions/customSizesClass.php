@@ -26,6 +26,9 @@ class s3CustomSizes
         if (empty($this->bucketName)) {
             return $originalUrl;
         }
+        // Strip the -256x256 from the url, so it loads the original image from S3.
+        $dimensionsPattern = '/-\d+x\d+(?=\.[a-zA-Z]+$)/i';
+        $originalUrl = preg_replace($dimensionsPattern, '', $originalUrl);
 
         $pattern = '/^https:\/\/(.+?)\/images\/(.+)$/i';
         $replacement = "https://{$this->bucketName}/fit-in/{$width}x{$height}/images/$2";
