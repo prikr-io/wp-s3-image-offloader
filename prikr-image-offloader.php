@@ -34,11 +34,14 @@ require_once(__DIR__ . '/admin/settingspage.php');
 $wps3_activate_offloading = get_option('wps3_image_offloader')['wps3_activate_offloading']; // Activate bucket
 if (!$wps3_activate_offloading) return;
 
+define('WPS3_CLI_COMMAND', 'media-offloader');
+
 /**
  * Media offloader to AWS S3.
  */
 require_once(__DIR__ . '/offloader/MediaOffloaderClass.php');
 require_once(__DIR__ . '/offloader/MediaOffloaderWpCli.php');
+require_once(__DIR__ . '/offloader/MediaOffloaderRemoveS3Url.php');
 
 /**
  * Filter the Image Attribute functions, to add custom sizes

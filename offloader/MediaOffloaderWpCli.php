@@ -93,5 +93,5 @@ if (defined('WP_CLI') && WP_CLI) {
         }
     }
 
-    WP_CLI::add_command('offload-images', 's3MediaOffloaderCLI');
+    WP_CLI::add_command( WPS3_CLI_COMMAND . ' offload-images', 's3MediaOffloaderCLI');
 }
