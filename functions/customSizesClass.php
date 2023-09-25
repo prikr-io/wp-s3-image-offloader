@@ -1,4 +1,8 @@
 <?php
+$originalUrl = 'https://cdn.uwvloerafwerking.nl/images/818A9407-308x205.jpg';
+$dimensionsPattern = '/-\d+x\d+(?=\.[a-zA-Z]+$)/i';
+$originalUrl = preg_replace($dimensionsPattern, '', $originalUrl);
+var_dump($originalUrl);
 
 /**
  * Project: Prikr image offloader
@@ -81,6 +85,7 @@ class s3CustomSizes
             'medium_large',
             'large',
             '1920x1080', //custom
+            'card_thumbnails', // custom
             '1536x1536',
             '2048x2048',
             'woocommerce_thumbnail',
@@ -101,6 +106,7 @@ class s3CustomSizes
             'medium_large',
             'large',
             '1920x1080', //custom
+            'card_thumbnails', //custom
             '1536x1536',
             '2048x2048',
             'woocommerce_thumbnail',
@@ -113,9 +119,15 @@ class s3CustomSizes
             }
         }
     }
+
+    /**
+     * Disable default image downsizing.
+     * When a custom $size attribute is used in the wp_get_attachment_image function, it will automatically try to downsize to a default image size.
+     * For example: wp_get_attachment_image($id, [400, 600]) will automatically downsize to the 'thumbnail' size, instead of using the actual 400x600 sizes.
+     */
     public function disableImageDownsize($downsize, $attachment_id, $size)
     {
-        // Check if the array is a custom size array (meaning 400x600, instead of 'thumbnail' or another default size)
+        // Check if the $size attribute is array. So only run on [400, 600] and not on 'thumbnail' or 'medium_large' etc.
         if (isset($size) && is_array($size)) {
             // Return the original image data without downsizing
             $original_image_url = wp_get_attachment_url($attachment_id);
