@@ -163,6 +163,10 @@ class WpImageOffloader
   public function wps3_image_offloader_developer_section_info()
   {
     echo '<p>Available WP CLI commands</p>';
+    if (!defined('WPS3_CLI_COMMAND')) {
+      echo '<p>The plugin is not activated. Activate the plugin to show the WP CLI commands.</p>';
+      return;
+    }
     echo '<ul>';
     echo '<li><code>wp '.WPS3_CLI_COMMAND.' offload-images --batch-size=20 --timeout=10</code> - Offload all images to S3.</li>';
     echo '<li><code>wp '.WPS3_CLI_COMMAND.' delete-s3url --dry-run</code> - Delete the <code>s3_url</code> post meta from all images.</li>';
