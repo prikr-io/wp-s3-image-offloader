@@ -41,7 +41,6 @@ define('WPS3_CLI_COMMAND', 'media-offloader');
  */
 require_once(__DIR__ . '/offloader/MediaOffloaderClass.php');
 require_once(__DIR__ . '/offloader/MediaOffloaderWpCli.php');
-require_once(__DIR__ . '/offloader/MediaOffloaderRemoveS3Url.php');
 
 /**
  * Filter the Image Attribute functions, to add custom sizes
