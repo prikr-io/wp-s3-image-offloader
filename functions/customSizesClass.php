@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Project: Prikr image offloader
  * File: $(fileName)
@@ -22,10 +23,11 @@ class s3CustomSizes
 
         add_filter(
             'intermediate_image_sizes_advanced',
-            [$this, 'unsetDefaultWPImageSizes']
+            [$this, 'unsetDefaultWPImageSizes'],
+            11
         );
         add_action('init', [$this, 'removeExtraImageSizes'], 11);
-        add_filter('image_downsize', [$this, 'disableImageDownsize'], 10, 3);
+        add_filter('image_downsize', [$this, 'disableImageDownsize'], 11, 3);
     }
 
     public function replaceImageUrl($originalUrl, $width, $height, $dpr = 1)
