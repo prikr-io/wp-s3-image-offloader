@@ -1,6 +1,11 @@
 <?php
+/**
+ * Project: prikr-image-offloader
+ * Author: Koen Dolron
+ * Copyright © Prikr 
+*/
 
-defined('ABSPATH') || exit;
+if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
 if (!class_exists('prikrUpdateChecker')) {
 

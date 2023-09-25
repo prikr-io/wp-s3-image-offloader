@@ -1,4 +1,12 @@
 <?php
+/**
+ * Project: prikr-image-offloader
+ * Author: Koen Dolron
+ * Copyright © Prikr 
+*/
+
+if (!defined('ABSPATH')) exit; // Exit if accessed directly
+
 require 'vendor/autoload.php';
 
 use Aws\S3\S3Client;

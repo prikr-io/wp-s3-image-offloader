@@ -1,4 +1,11 @@
 <?php
+/**
+ * Project: prikr-image-offloader
+ * Author: Koen Dolron
+ * Copyright © Prikr 
+*/
+
+if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
 use ParagonIE\Sodium\Core\Curve25519\H;
 

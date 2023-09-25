@@ -1,11 +1,9 @@
 <?php
-
 /**
- * Project: Prikr image offloader
- * File: $(fileName)
+ * Project: prikr-image-offloader
  * Author: Koen Dolron
  * Copyright © Prikr 
- */
+*/
 
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
