@@ -2,7 +2,7 @@
 /*
 Plugin Name: Prikr Image offloader
 Plugin URI: https://prikr.io
-Description: Offload WP images to S3, including WPAI support.
+Description: Offload images to AWS S3, including WP CLI and WPAI support.
 Version: 2.3
 Author: Prikr
 Author URI: https://prikr.io/
