@@ -1,9 +1,4 @@
 <?php
-$originalUrl = 'https://cdn.uwvloerafwerking.nl/images/818A9407-308x205.jpg';
-$dimensionsPattern = '/-\d+x\d+(?=\.[a-zA-Z]+$)/i';
-$originalUrl = preg_replace($dimensionsPattern, '', $originalUrl);
-var_dump($originalUrl);
-
 /**
  * Project: Prikr image offloader
  * File: $(fileName)
