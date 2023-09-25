@@ -81,6 +81,9 @@ class s3CustomSizes
             'large',
             '1920x1080', //custom
             'card_thumbnails', // custom
+            'navigation_thumbnails', //custom
+            'small', //custom
+            'normal',  //custom
             '1536x1536',
             '2048x2048',
             'woocommerce_thumbnail',
@@ -101,7 +104,10 @@ class s3CustomSizes
             'medium_large',
             'large',
             '1920x1080', //custom
-            'card_thumbnails', //custom
+            'card_thumbnails', // custom
+            'navigation_thumbnails', //custom
+            'small', //custom
+            'normal',  //custom
             '1536x1536',
             '2048x2048',
             'woocommerce_thumbnail',
