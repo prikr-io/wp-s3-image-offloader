@@ -33,7 +33,6 @@ class s3MediaOffloader
     add_action('add_attachment', [$this, 'offloadMedia']);
     add_action('pmxi_attachment_uploaded', [$this, 'offloadWpaiMediaOnUpload'], 10, 3);
     add_action('pmxi_gallery_image', [$this, 'offloadWpaiMediaOnUpload'], 10, 3);
-    add_filter('wp_get_attachment_url', [$this, 'replaceAttachmentUrl'], 10, 2);
     add_action('delete_attachment', [$this, 'deleteMedia']);
   }
 
@@ -107,21 +106,6 @@ class s3MediaOffloader
       error_log($e->getMessage());
       return false;
     }
-  }
-
-  /**
-   * Replaces the Image URL with the S3 URL if available. 
-   * So that we can actually load in the image within WP.
-   */
-  public function replaceAttachmentUrl($url, $attachment_id)
-  {
-    if ($attachment_id) {
-      $s3_url = get_post_meta($attachment_id, 's3_url', true);
-      if ($s3_url) {
-        $url = $s3_url;
-      }
-    }
-    return $url;
   }
 
   /**

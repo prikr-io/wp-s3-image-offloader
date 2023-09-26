@@ -71,8 +71,16 @@ class WpImageOffloader
 
     add_settings_field(
       'wps3_activate_offloading', // id
-      'Activate bucket', // title
+      'Activate offloading', // title
       array($this, 'wps3_activate_offloading_callback'), // callback
+      'wps3-image-offloader-admin', // page
+      'wps3_image_offloader_setting_section' // section
+    );
+
+    add_settings_field(
+      'wps3_activate_cdn', // id
+      'Activate CDN', // title
+      array($this, 'wps3_activate_cdn_callback'), // callback
       'wps3-image-offloader-admin', // page
       'wps3_image_offloader_setting_section' // section
     );
@@ -141,6 +149,10 @@ class WpImageOffloader
       $sanitary_values['wps3_activate_offloading'] = $input['wps3_activate_offloading'];
     }
 
+    if (isset($input['wps3_activate_cdn'])) {
+      $sanitary_values['wps3_activate_cdn'] = $input['wps3_activate_cdn'];
+    }
+
     if (isset($input['wps3_bucket_name'])) {
       $sanitary_values['wps3_bucket_name'] = sanitize_text_field($input['wps3_bucket_name']);
     }
@@ -171,7 +183,7 @@ class WpImageOffloader
   {
     echo '<p>Available WP CLI commands</p>';
     if (!defined('WPS3_CLI_COMMAND')) {
-      echo '<p>The plugin is not activated. Activate the plugin to show the WP CLI commands.</p>';
+      echo '<p>Offloading is not activated. Activate offloading to show the WP CLI commands.</p>';
       return;
     }
     echo '<ul>';
@@ -183,8 +195,16 @@ class WpImageOffloader
   public function wps3_activate_offloading_callback()
   {
     printf(
-      '<input type="checkbox" name="wps3_image_offloader[wps3_activate_offloading]" id="wps3_activate_offloading" value="wps3_activate_offloading" %s> <label for="wps3_activate_offloading">Checking this box will activate the offloading of newly uploaded images.</label>',
+      '<input type="checkbox" name="wps3_image_offloader[wps3_activate_offloading]" id="wps3_activate_offloading" value="wps3_activate_offloading" %s> <label for="wps3_activate_offloading">Activate offloading of newly uploaded images to AWS.</label>',
       (isset($this->wps3_image_offloader_options['wps3_activate_offloading']) && $this->wps3_image_offloader_options['wps3_activate_offloading'] === 'wps3_activate_offloading') ? 'checked' : ''
+    );
+  }
+
+  public function wps3_activate_cdn_callback()
+  {
+    printf(
+      '<input type="checkbox" name="wps3_image_offloader[wps3_activate_cdn]" id="wps3_activate_cdn" value="wps3_activate_cdn" %s> <label for="wps3_activate_cdn">Start serving the images from your CDN.</label>',
+      (isset($this->wps3_image_offloader_options['wps3_activate_cdn']) && $this->wps3_image_offloader_options['wps3_activate_cdn'] === 'wps3_activate_cdn') ? 'checked' : ''
     );
   }
 

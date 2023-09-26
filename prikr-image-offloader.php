@@ -42,6 +42,8 @@ define('WPS3_CLI_COMMAND', 'media-offloader');
 require_once(__DIR__ . '/offloader/MediaOffloaderClass.php');
 require_once(__DIR__ . '/offloader/MediaOffloaderWpCli.php');
 
+
+if (!isset($wps3_activate_offloading['wps3_activate_cdn'])) return;
 /**
  * Filter the Image Attribute functions, to add custom sizes
  */
