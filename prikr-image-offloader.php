@@ -31,8 +31,8 @@ require_once(__DIR__ . '/admin/settingspage.php');
 /**
  * Check wether the plugin is activated through it's own options page.
  */
-$wps3_activate_offloading = get_option('wps3_image_offloader')['wps3_activate_offloading']; // Activate bucket
-if (!$wps3_activate_offloading) return;
+$wps3_activate_offloading = get_option('wps3_image_offloader'); // Activate bucket
+if (!isset($wps3_activate_offloading['wps3_activate_offloading'])) return;
 
 define('WPS3_CLI_COMMAND', 'media-offloader');
 
