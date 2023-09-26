@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Project: prikr-image-offloader
  * Author: Koen Dolron
  * Copyright © Prikr 
-*/
+ */
 
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
@@ -16,41 +17,47 @@ class s3CustomSizes
         $options = get_option('wps3_image_offloader');
         $this->bucketName = isset($options['wps3_bucket_name']) ? $options['wps3_bucket_name'] : '';
 
-        add_filter('wp_get_attachment_image_attributes', [$this, 'modifyImageAttributes'], 6, 3);
-
-
-        add_filter(
-            'intermediate_image_sizes_advanced',
-            [$this, 'unsetDefaultWPImageSizes'],
-            11
-        );
-        add_action('init', [$this, 'removeExtraImageSizes'], 11);
+        add_filter('wp_get_attachment_url', [$this, 'replaceAttachmentUrl'], 10, 2);
+        add_filter('wp_get_attachment_image_src', [$this, 'alwaysReturnFullImageSrc'], 10, 4);
+        add_filter('wp_get_attachment_image_attributes', [$this, 'buildImageAttributes'], 6, 3);
         add_filter('image_downsize', [$this, 'disableImageDownsize'], 11, 3);
     }
 
-    public function replaceImageUrl($originalUrl, $width, $height, $dpr = 1)
+    /**
+     * Replaces the Image URL with the S3 URL if available. 
+     * So that we can actually load in the image within WP.
+     */
+    public function replaceAttachmentUrl($url, $attachment_id)
     {
-        if (empty($this->bucketName)) {
-            return $originalUrl;
+        if ($attachment_id) {
+            $s3_url = get_post_meta($attachment_id, 's3_url', true);
+            if ($s3_url) {
+                $url = $s3_url;
+            }
         }
-        $dimensionsPattern = '/-\d+x\d+(?=\.[a-zA-Z]+$)/i';
-        $originalUrl = preg_replace($dimensionsPattern, '', $originalUrl);
-
-        $width = $width * $dpr;
-        $height = $height * $dpr;
-
-
-        $pattern = '/^https:\/\/(.+?)\/images\/(.+)$/i';
-        $replacement = "https://{$this->bucketName}/fit-in/filters:no_upscale()/{$width}x{$height}/images/$2";
-
-        $resizedUrl = preg_replace($pattern, $replacement, $originalUrl);
-
-        return $resizedUrl;
+        return $url;
     }
 
-    public function modifyImageAttributes($attributes, $attachment, $size)
+
+    /**
+     * Disregard the image size used in a image function and always return the full image src.
+     * get_the_post_thumbnail($id, 'thumbnail'), wp_get_attachment_image($id, 'thumbnail')
+     * Those will all return full URL.
+     */
+    function alwaysReturnFullImageSrc($image, $attachment_id, $size, $icon)
+    {        
+        // TODO perhaps use an WP function instead of a regex..
+        $dimensionsPattern = '/-\d+x\d+(?=\.[a-zA-Z]+$)/i';
+        $image[0] = preg_replace($dimensionsPattern, '', $image[0]);
+        return $image;
+    }
+
+    /**
+     * Build the image attributes using the width and height attributes.
+     */
+    public function buildImageAttributes($attributes, $attachment, $size)
     {
-        $imageUrl = $attributes['src'];
+        $imageUrl = wp_get_attachment_url($attachment->ID);
         if (!empty($attributes['s3width']) || !empty($attributes['s3height'])) {
             $width = !empty($attributes['s3width']) ? $attributes['s3width'] : null;
             $height = !empty($attributes['s3height']) ? $attributes['s3height'] : null;
@@ -64,61 +71,32 @@ class s3CustomSizes
                 $width = $thumbnail_image[1];
                 $height = $thumbnail_image[2];
                 $attributes['src'] = $this->replaceImageUrl($imageUrl, $width, $height);
-
                 $attributes['srcset'] = $this->replaceImageUrl($imageUrl, $width, $height, 2) . ' 2x, ' . $this->replaceImageUrl($imageUrl, $width, $height, 3) . ' 3x';
             }
         }
         return $attributes;
     }
 
-
-    public function unsetDefaultWPImageSizes($sizes)
+    /**
+     * Build the image URL based on the width, height and DPR.
+     * This will result in an AWS thumbor filter.
+     */
+    public function replaceImageUrl($originalUrl, $width, $height, $dpr = 1)
     {
-        $image_sizes = [
-            'thumbnail',
-            'medium',
-            'medium_large',
-            'large',
-            '1920x1080', //custom
-            'card_thumbnails', // custom
-            'navigation_thumbnails', //custom
-            'small', //custom
-            'normal',  //custom
-            '1536x1536',
-            '2048x2048',
-            'woocommerce_thumbnail',
-            'woocommerce_single',
-            'woocommerce_gallery_thumbnail',
-        ];
-        foreach ($image_sizes as $image_size) {
-            unset($sizes[$image_size]);
+        if (empty($this->bucketName)) {
+            return $originalUrl;
         }
-        return $sizes;
-    }
 
-    public function removeExtraImageSizes()
-    {
-        $image_sizes = [
-            'thumbnail',
-            'medium',
-            'medium_large',
-            'large',
-            '1920x1080', //custom
-            'card_thumbnails', // custom
-            'navigation_thumbnails', //custom
-            'small', //custom
-            'normal',  //custom
-            '1536x1536',
-            '2048x2048',
-            'woocommerce_thumbnail',
-            'woocommerce_single',
-            'woocommerce_gallery_thumbnail',
-        ];
-        foreach (get_intermediate_image_sizes() as $size) {
-            if (in_array($size, $image_sizes)) {
-                remove_image_size($size);
-            }
-        }
+        $width = $width * $dpr;
+        $height = $height * $dpr;
+
+
+        $pattern = '/^https:\/\/(.+?)\/images\/(.+)$/i';
+        $replacement = "https://{$this->bucketName}/fit-in/filters:no_upscale()/{$width}x{$height}/images/$2";
+
+        $resizedUrl = preg_replace($pattern, $replacement, $originalUrl);
+
+        return $resizedUrl;
     }
 
     /**
