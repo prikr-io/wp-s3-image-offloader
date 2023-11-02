@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Project: prikr-image-offloader
  * Author: Koen Dolron
  * Copyright © Prikr 
-*/
+ */
 
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
@@ -20,47 +21,45 @@ if (!class_exists('prikrUpdateChecker')) {
 
         public function __construct()
         {
-            // var_dump('construct');
             $info = wps3_get_plugin_info();
             $this->plugin_slug = $info['slug'];
             $this->plugin_basefile = $info['filename'];
             $this->version = '1.0';
-            $this->cache_key = 'prikr_updater_cache_1';
-            $this->cache_allowed = false;
-            delete_transient($this->cache_key);
+            $this->cache_key = 'prikr_updater_cache';
+            $this->cache_allowed = true;
+
 
             add_filter('plugins_api', array($this, 'info'), 20, 3);
             add_filter('site_transient_update_plugins', array($this, 'update'));
             add_action('upgrader_process_complete', array($this, 'purge'), 10, 2);
         }
 
-        public function request()
+        public function request_new_info()
         {
-            // var_dump('request');
             $remote = get_transient($this->cache_key);
 
-            // if (false === $remote || !$this->cache_allowed) {
+            if (false === $remote || !$this->cache_allowed) {
 
-            $remote = wp_remote_get(
-                'https://plugin.prikr.io/prikr-image-offloader/info.json',
-                array(
-                    'timeout' => 10,
-                    'headers' => array(
-                        'Accept' => 'application/json'
+                $remote = wp_remote_get(
+                    'https://plugin.prikr.io/prikr-image-offloader/info.json',
+                    array(
+                        'timeout' => 10,
+                        'headers' => array(
+                            'Accept' => 'application/json'
+                        )
                     )
-                )
-            );
+                );
 
-            if (
-                is_wp_error($remote)
-                || 200 !== wp_remote_retrieve_response_code($remote)
-                || empty(wp_remote_retrieve_body($remote))
-            ) {
-                return false;
+                if (
+                    is_wp_error($remote)
+                    || 200 !== wp_remote_retrieve_response_code($remote)
+                    || empty(wp_remote_retrieve_body($remote))
+                ) {
+                    return false;
+                }
+
+                set_transient($this->cache_key, $remote, DAY_IN_SECONDS);
             }
-
-            set_transient($this->cache_key, $remote, DAY_IN_SECONDS);
-            // }
 
             $remote = json_decode(wp_remote_retrieve_body($remote));
 
@@ -70,10 +69,6 @@ if (!class_exists('prikrUpdateChecker')) {
 
         function info($res, $action, $args)
         {
-            // var_dump('info');
-            // var_dump($action);
-            // var_dump($args);
-
             // do nothing if you're not getting plugin information right now
             if ('plugin_information' !== $action) {
                 return $res;
@@ -85,7 +80,7 @@ if (!class_exists('prikrUpdateChecker')) {
             }
 
             // get updates
-            $remote = $this->request();
+            $remote = $this->request_new_info();
 
             if (!$remote) {
                 return $res;
@@ -123,15 +118,11 @@ if (!class_exists('prikrUpdateChecker')) {
 
         public function update($transient)
         {
-            // var_dump('update');
-
-
             if (empty($transient->checked)) {
                 return $transient;
             }
 
-            $remote = $this->request();
-            // var_dump($remote);
+            $remote = $this->request_new_info();
 
             if (
                 $remote
@@ -139,7 +130,6 @@ if (!class_exists('prikrUpdateChecker')) {
                 && version_compare($remote->requires, get_bloginfo('version'), '<=')
                 && version_compare($remote->requires_php, PHP_VERSION, '<')
             ) {
-                // var_dump('checked');
                 $res = new stdClass();
                 $res->slug = $this->plugin_slug;
                 $res->plugin = $this->plugin_basefile; // your-plugin-directory/your-plugin-basefile.php
