@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Project: prikr-image-offloader
  * Author: Koen Dolron
  * Copyright © Prikr 
-*/
+ */
 
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
@@ -158,6 +159,7 @@ function init_mediaoffloader_class()
     $s3Client = new S3Client([
       'region' => $bucket_region,
       'version' => 'latest',
+      'use_aws_shared_config_files' => false,
       'credentials' => [
         'key' => $aws_key,
         'secret' => $aws_secret
