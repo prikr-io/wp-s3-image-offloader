@@ -101,11 +101,7 @@ if (!class_exists('prikrUpdateChecker')) {
             $res->last_updated = $remote->last_updated;
 
             $res->sections = array(
-<<<<<<< HEAD
-                'changelog' => $remote->sections->changelog
-=======
                 'changelog' => file_get_contents($remote->changelog)
->>>>>>> 37b2080 (commit)
             );
 
             $res->contributors = array(
