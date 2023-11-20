@@ -13,15 +13,18 @@ const changelogFile = path.join(__dirname, '..', 'changelog.html');
 // Function to update the JSON file
 async function updateInfoJsonFile(newVersion) {
     try {
+        const currentDate = new Date().toISOString().slice(0, 19).replace("T", " "); // Get today's date in the format "YYYY-MM-DD HH:mm:ss"
         const data = await fs.readFile(infoJsonFile, 'utf8');
         const json = JSON.parse(data);
         json.version = newVersion;
+        json.last_updated = currentDate;
         await fs.writeFile(infoJsonFile, JSON.stringify(json, null, 2), 'utf8');
-        console.log(`Version updated to ${newVersion} in JSON file`);
+        console.log(`Version updated to ${newVersion} and last_updated to ${currentDate} in JSON file`);
     } catch (err) {
         console.error('Error updating JSON file:', err);
     }
 }
+
 
 // Function to update the PHP file
 async function updateMainPluginFile(newVersion) {
@@ -57,14 +60,23 @@ async function updatePackageJsonFile(newVersion) {
 // Function to write changes to changelog.html
 async function writeChangesToChangelog(version, changes) {
     try {
+        const currentDate = new Date().toISOString().slice(0, 10); // Get today's date in the format "YYYY-MM-DD"
+
         let changelogContent = await fs.readFile(changelogFile, 'utf8');
+
+        const changelogEntry = `<li>
+                                    <h4><span class="version">${version}</span>    <span class="date">${currentDate}</span></h4>
+                                    <ul>
+                                        ${changes.map(change => `<li>${change}</li>`).join('\n')}
+                                    </ul>
+                                </li>`;
 
         if (!changelogContent.includes('<ul>')) {
             // If <ul> tag is not present, add it along with the first entry
-            changelogContent = `<h1>Changelog</h1>\n\n<ul>\n    <li>\n        <h4>\n            <span class="version">${version}</span>\n        </h4>\n        <ul>\n            ${changes.map(change => `<li>${change}</li>`).join('\n            ')}\n        </ul>\n    </li>\n</ul>`;
+            changelogContent = `<h1>Changelog</h1>\n\n<ul>\n    ${changelogEntry}\n</ul>`;
         } else {
             // Replace the <ul> tag with the new version and changes
-            changelogContent = changelogContent.replace('<ul>', `<ul>\n    <li>\n        <h4>\n            <span class="version">${version}</span>\n        </h4>\n        <ul>\n            ${changes.map(change => `<li>${change}</li>`).join('\n            ')}\n        </ul>\n    </li>`);
+            changelogContent = changelogContent.replace('<ul>', `<ul>\n    ${changelogEntry}`);
         }
 
         await fs.writeFile(changelogFile, changelogContent, 'utf8');
@@ -73,6 +85,7 @@ async function writeChangesToChangelog(version, changes) {
         console.error('Error writing changes to changelog.html:', err);
     }
 }
+
 
 
 async function main() {
