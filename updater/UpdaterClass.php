@@ -101,9 +101,11 @@ if (!class_exists('prikrUpdateChecker')) {
             $res->last_updated = $remote->last_updated;
 
             $res->sections = array(
-                'description' => $remote->sections->description,
-                'installation' => $remote->sections->installation,
                 'changelog' => $remote->sections->changelog
+            );
+
+            $res->contributors = array(
+                'Koen Dolron' => $remote->contributors->koendolron
             );
 
             if (!empty($remote->banners)) {
