@@ -3,15 +3,16 @@
   "slug": "prikr-image-offloader",
   "author": "<a href='https://prikr.io'>Prikr</a>",
   "author_profile": "http://prikr.io",
-  "contributors":{
-    "koendolron":  "<a href='https://dolrondesign.nl'>Koen Dolron</a>"
+  "contributors": {
+    "koendolron": "<a href='https://dolrondesign.nl'>Koen Dolron</a>"
   },
-  "version": "2.5",
+  "version": "2.6",
   "download_url": "https://plugin.prikr.io/prikr-image-offloader/prikr-image-offloader.zip",
   "requires": "3.0",
   "tested": "5.8",
   "requires_php": "5.3",
   "last_updated": "2021-01-30 02:10:00",
+"changelog": "https://plugin.prikr.io/prikr-image-offloader/CHANGELOG.md",
   "sections": {
     "changelog": "<h4>1.0 –  1 august 2021</h4><ul><li>Bug fixes.</li><li>Initital release.</li></ul>"
   },
