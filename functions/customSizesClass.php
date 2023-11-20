@@ -8,6 +8,7 @@
 
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
+
 class s3CustomSizes
 {
     private $bucketName;
@@ -21,6 +22,7 @@ class s3CustomSizes
         add_filter('wp_get_attachment_image_src', [$this, 'alwaysReturnFullImageSrc'], 10, 4);
         add_filter('wp_get_attachment_image_attributes', [$this, 'buildImageAttributes'], 6, 3);
         add_filter('image_downsize', [$this, 'disableImageDownsize'], 11, 3);
+        add_filter('wp_prepare_attachment_for_js', [$this, 'replaceAttachmentUrlsForJSimages'], 10, 3);
     }
 
     /**
@@ -38,6 +40,20 @@ class s3CustomSizes
         return $url;
     }
 
+    /**
+     * WordPress uses the wp_prepare_attachment_for_js filter to prepare the attachment data for the media library.
+     * We will filter each image size and re-format the URL to the S3 URL, with the respective width and height values
+     */
+    public function replaceAttachmentUrlsForJSimages($response, $attachment, $meta)
+    {
+        foreach ($response['sizes'] as $key => $size) {
+            $response['sizes'][$key]['url'] = $this->replaceImageUrl($size['url'], $size['width'], $size['height']);
+            // It is important to remove the dimensions from the URL, as LAST. Else JS will take over and add the dimensions again.
+            $dimensionsPattern = '/-\d+x\d+(?=\.[a-zA-Z]+$)/i';
+            $response['sizes'][$key]['url'] = preg_replace($dimensionsPattern, '', $response['sizes'][$key]['url']);
+        }
+        return $response;
+    }
 
     /**
      * Disregard the image size used in a image function and always return the full image src.
@@ -45,7 +61,7 @@ class s3CustomSizes
      * Those will all return full URL.
      */
     function alwaysReturnFullImageSrc($image, $attachment_id, $size, $icon)
-    {        
+    {
         // TODO perhaps use an WP function instead of a regex..
         $dimensionsPattern = '/-\d+x\d+(?=\.[a-zA-Z]+$)/i';
         $image[0] = preg_replace($dimensionsPattern, '', $image[0]);
