@@ -104,9 +104,9 @@ if (!class_exists('prikrUpdateChecker')) {
                 'changelog' => file_get_contents(WPS3_PATH . 'changelog.html')
             );
 
-            // $res->contributors = array(
-            //     'Koen Dolron' => $remote->contributors->koendolron
-            // );
+            $res->contributors = array(
+                'Koen Dolron' => $remote->contributors->koendolron
+            );
 
             if (!empty($remote->banners)) {
                 $res->banners = array(

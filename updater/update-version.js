@@ -1,11 +1,13 @@
 // main.js
 const fs = require('fs').promises;
 const path = require('path');
-const { promptForNewVersion, closeInterface } = require('./modules/userPrompts');
+const { promptForNewVersion, promptForChanges, closeInterface } = require('./modules/userPrompts');
+
 
 const infoJsonFile = path.join(__dirname, '..', 'info.json');
 const mainPluginFile = path.join(__dirname, '..', 'prikr-image-offloader.php');
 const packageJsonFile = path.join(__dirname, '..', 'package.json');
+const changelogFile = path.join(__dirname, '..', 'changelog.html');
 
 
 // Function to update the JSON file
@@ -52,15 +54,47 @@ async function updatePackageJsonFile(newVersion) {
     }
 }
 
-// Call the update functions
-promptForNewVersion(packageJsonFile)
-    .then((newVersion) => Promise.all([
-        updateInfoJsonFile(newVersion),
-        updateMainPluginFile(newVersion),
-        updatePackageJsonFile(newVersion),
-    ]))
-    .then(closeInterface)
-    .catch((err) => {
+// Function to write changes to changelog.html
+async function writeChangesToChangelog(version, changes) {
+    try {
+        let changelogContent = await fs.readFile(changelogFile, 'utf8');
+
+        if (!changelogContent.includes('<ul>')) {
+            // If <ul> tag is not present, add it along with the first entry
+            changelogContent = `<h1>Changelog</h1>\n\n<ul>\n    <li>\n        <h4>\n            <span class="version">${version}</span>\n        </h4>\n        <ul>\n            ${changes.map(change => `<li>${change}</li>`).join('\n            ')}\n        </ul>\n    </li>\n</ul>`;
+        } else {
+            // Replace the <ul> tag with the new version and changes
+            changelogContent = changelogContent.replace('<ul>', `<ul>\n    <li>\n        <h4>\n            <span class="version">${version}</span>\n        </h4>\n        <ul>\n            ${changes.map(change => `<li>${change}</li>`).join('\n            ')}\n        </ul>\n    </li>`);
+        }
+
+        await fs.writeFile(changelogFile, changelogContent, 'utf8');
+        console.log(`Changes written to changelog.html for version ${version}`);
+    } catch (err) {
+        console.error('Error writing changes to changelog.html:', err);
+    }
+}
+
+
+async function main() {
+    try {
+        const newVersion = await promptForNewVersion(packageJsonFile);
+
+        const changes = await promptForChanges();
+        console.log('Changes:', changes);
+
+        await Promise.all([
+            updateInfoJsonFile(newVersion),
+            updateMainPluginFile(newVersion),
+            updatePackageJsonFile(newVersion),
+            writeChangesToChangelog(newVersion, changes),
+        ]);
+
+        closeInterface();
+    } catch (err) {
         console.error('Error updating files:', err);
         closeInterface();
-    });
+    }
+}
+
+// Call the main function
+main();

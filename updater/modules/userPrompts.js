@@ -19,23 +19,24 @@ async function getCurrentVersionFromFile(filePath) {
     }
 }
 
+// Utility function to prompt the user for input
+async function ask(question) {
+    return new Promise((resolve) => {
+        rl.question(question, (answer) => {
+            resolve(answer);
+        });
+    });
+}
+
 // Function to prompt the user for the new version
 async function promptForNewVersion(packageJsonFile) {
     const currentVersion = await getCurrentVersionFromFile(packageJsonFile) || '0.0.1';
-
-    async function ask() {
-        return new Promise((resolve) => {
-            rl.question(`Enter new version (current version ${currentVersion}): `, (version) => {
-                resolve(version);
-            });
-        });
-    }
 
     let isValid = false;
     let newVersion;
 
     while (!isValid) {
-        const userInput = await ask();
+        const userInput = await ask(`Enter new version (current version ${currentVersion}): `);
 
         if (/^\d+\.\d+\.\d+$/.test(userInput) && compareVersions(userInput, currentVersion) > 0) {
             newVersion = userInput;
@@ -45,9 +46,27 @@ async function promptForNewVersion(packageJsonFile) {
         }
     }
 
-    return newVersion; // Add this line to return the new version
+    return newVersion;
 }
 
+// Function to prompt the user for changes
+async function promptForChanges() {
+    const changes = [];
+
+    while (true) {
+        const change = await ask('Enter a change description (type "exit" to stop asking): ');
+
+        if (change.trim() === 'exit') {
+            break;
+        }
+
+        if (change.trim() !== '') {
+            changes.push(change);
+        }
+    }
+
+    return changes;
+}
 
 // Close the readline interface
 function closeInterface() {
@@ -70,5 +89,6 @@ function compareVersions(versionA, versionB) {
 
 module.exports = {
     promptForNewVersion,
+    promptForChanges,
     closeInterface,
 };
