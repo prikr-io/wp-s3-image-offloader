@@ -1,10 +1,6 @@
 {
   "name": "prikr-image-offloader",
-<<<<<<< HEAD
   "version": "2.5",
-=======
-  "version": "2.6",
->>>>>>> 37b2080 (commit)
   "description": "### TODO:",
   "main": "index.js",
   "scripts": {

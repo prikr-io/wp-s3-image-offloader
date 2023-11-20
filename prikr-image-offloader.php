@@ -3,11 +3,7 @@
 Plugin Name: Prikr Image offloader
 Plugin URI: https://prikr.io
 Description: Offload images to AWS S3, including WP CLI and WPAI support.
-<<<<<<< HEAD
-Version: 2.5
-=======
-Version: 2.6
->>>>>>> 37b2080 (commit)
+Version: 2.5.4
 Author: Prikr
 Author URI: https://prikr.io/
 License: GPLv2 or later
@@ -39,12 +35,19 @@ $wps3_activate_offloading = get_option('wps3_image_offloader'); // Activate buck
 if (!isset($wps3_activate_offloading['wps3_activate_offloading'])) return;
 
 define('WPS3_CLI_COMMAND', 'media-offloader');
+define('WPS3_PATH', plugin_dir_path(__FILE__));
+define('WPS3_BASENAME', plugin_basename(__FILE__));
 
-/**
- * Media offloader to AWS S3.
- */
+
+// Admin attachment fields
+require_once(__DIR__ . '/admin/mediaSettings.php');
+
+// Offload images on upload
 require_once(__DIR__ . '/offloader/MediaOffloaderClass.php');
+// Offload images using the CLI
 require_once(__DIR__ . '/offloader/MediaOffloaderWpCli.php');
+// Offload single images via the Admin screen
+require_once(__DIR__ . '/offloader/MediaOffloaderSingleItem.php');
 
 
 if (!isset($wps3_activate_offloading['wps3_activate_cdn'])) return;
