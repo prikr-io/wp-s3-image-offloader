@@ -46,11 +46,15 @@ class s3CustomSizes
      */
     public function replaceAttachmentUrlsForJSimages($response, $attachment, $meta)
     {
-        foreach ($response['sizes'] as $key => $size) {
-            $response['sizes'][$key]['url'] = $this->replaceImageUrl($size['url'], $size['width'], $size['height']);
-            // It is important to remove the dimensions from the URL, as LAST. Else JS will take over and add the dimensions again.
-            $dimensionsPattern = '/-\d+x\d+(?=\.[a-zA-Z]+$)/i';
-            $response['sizes'][$key]['url'] = preg_replace($dimensionsPattern, '', $response['sizes'][$key]['url']);
+        $s3_url = get_post_meta($attachment->ID, 's3_url', true);
+        if (!empty($s3_url)) {
+            foreach ($response['sizes'] as $key => $size) {
+                $response['sizes'][$key]['url'] = $this->replaceImageUrl($size['url'], $size['width'], $size['height']);
+                // It is important to remove the dimensions from the URL, as LAST. Else JS will take over and add the dimensions again.
+                $dimensionsPattern = '/-\d+x\d+(?=\.[a-zA-Z]+$)/i';
+                $response['sizes'][$key]['url'] = preg_replace($dimensionsPattern, '', $response['sizes'][$key]['url']);
+            }
+            return $response;
         }
         return $response;
     }

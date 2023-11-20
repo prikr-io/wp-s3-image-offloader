@@ -114,7 +114,7 @@ if (defined('WP_CLI') && WP_CLI) {
          * @param array $args
          * @param array $assoc_args
          */
-        public function delete_s3_url($args, $assoc_args)
+        public function delete($args, $assoc_args)
         {
             global $wpdb;
 

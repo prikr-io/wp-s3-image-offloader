@@ -82,8 +82,14 @@ class s3MediaOffloader
       // We want to replace this with our custom domain name.
       $url = 'https://' . $this->bucketName . '/' . $key;
 
-      error_log('wps3 Uploaded file to S3: ' . $url);
       update_post_meta($attachment_id, 's3_url', $url);
+      error_log('wps3 Uploaded file to S3: ' . $url);
+
+      add_action('admin_notices', function () use ($url) {
+        echo '<div class="notice notice-success is-dismissible"><p>';
+        echo 'Offloaded image to: <a href="'.esc_html($url).'" target="_blank">' . esc_html($url) . '</a>';
+        echo '</p></div>';
+    });
 
       /**
        * Check if the user wants to remove the images from the server.
@@ -102,6 +108,11 @@ class s3MediaOffloader
 
       return $url;
     } catch (S3Exception $e) {
+                add_action('admin_notices', function () use ($e) {
+                  echo '<div class="notice notice-error is-dismissible"><p>';
+                  echo 'Error offloading: ' . esc_html($e->getMessage());
+                  echo '</p></div>';
+              });
       error_log('wps3 Error uploading file to S3: ' . $e->getMessage());
       error_log($e);
       error_log($e->getMessage());

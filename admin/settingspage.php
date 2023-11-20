@@ -187,8 +187,8 @@ class WpImageOffloader
       return;
     }
     echo '<ul>';
-    echo '<li><code>wp '.WPS3_CLI_COMMAND.' offload-images --batch-size=20 --timeout=10</code> - Offload all images to S3.</li>';
-    echo '<li><code>wp '.WPS3_CLI_COMMAND.' delete-s3url --dry-run</code> - Delete the <code>s3_url</code> post meta from all images.</li>';
+    echo '<li><code>wp '.WPS3_CLI_COMMAND.' offload --batch-size=20 --timeout=10</code> - Offload all images to S3.</li>';
+    echo '<li><code>wp '.WPS3_CLI_COMMAND.' delete --dry-run</code> - Delete the <code>s3_url</code> post meta from all images.</li>';
     echo '</ul>';
   }
 
