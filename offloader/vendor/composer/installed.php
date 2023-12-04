@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => '__root__',
-        'pretty_version' => 'dev-develop',
-        'version' => 'dev-develop',
-        'reference' => '79a6ff40fe2fcbda9bcf62341bf02d1a9328a4b9',
+        'pretty_version' => 'dev-master',
+        'version' => 'dev-master',
+        'reference' => '96fc2caf34775f2103c77e3acd8a7230b9772dc2',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -11,9 +11,9 @@
     ),
     'versions' => array(
         '__root__' => array(
-            'pretty_version' => 'dev-develop',
-            'version' => 'dev-develop',
-            'reference' => '79a6ff40fe2fcbda9bcf62341bf02d1a9328a4b9',
+            'pretty_version' => 'dev-master',
+            'version' => 'dev-master',
+            'reference' => '96fc2caf34775f2103c77e3acd8a7230b9772dc2',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -34,6 +34,15 @@
             'reference' => '10631467bdf9869a45197a25b490948af2ef7acd',
             'type' => 'library',
             'install_path' => __DIR__ . '/../aws/aws-sdk-php',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'deliciousbrains/wp-background-processing' => array(
+            'pretty_version' => '1.1.1',
+            'version' => '1.1.1.0',
+            'reference' => 'ebbed762c42e70e76573ffbd36e591378ba5f2ee',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../deliciousbrains/wp-background-processing',
             'aliases' => array(),
             'dev_requirement' => false,
         ),

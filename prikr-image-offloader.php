@@ -44,10 +44,14 @@ require_once(__DIR__ . '/admin/mediaSettings.php');
 
 // Offload images on upload
 require_once(__DIR__ . '/offloader/MediaOffloaderClass.php');
+// Offload images on upload
+require_once(__DIR__ . '/offloader/MediaOffloaderInit.php');
 // Offload images using the CLI
 require_once(__DIR__ . '/offloader/MediaOffloaderWpCli.php');
 // Offload single images via the Admin screen
 require_once(__DIR__ . '/offloader/MediaOffloaderSingleItem.php');
+// Offload images using AJAX calls
+require_once(__DIR__ . '/offloader/MediaOffloaderBatchProcessing.php');
 
 
 if (!isset($wps3_activate_offloading['wps3_activate_cdn'])) return;

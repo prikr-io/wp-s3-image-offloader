@@ -1,5 +1,6 @@
 {
     "require": {
-        "aws/aws-sdk-php": "^3.273"
+        "aws/aws-sdk-php": "^3.273",
+        "deliciousbrains/wp-background-processing": "^1.1"
     }
 }
