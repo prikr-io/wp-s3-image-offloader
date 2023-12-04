@@ -87,9 +87,9 @@ class s3MediaOffloader
 
       add_action('admin_notices', function () use ($url) {
         echo '<div class="notice notice-success is-dismissible"><p>';
-        echo 'Offloaded image to: <a href="'.esc_html($url).'" target="_blank">' . esc_html($url) . '</a>';
+        echo 'Offloaded image to: <a href="' . esc_html($url) . '" target="_blank">' . esc_html($url) . '</a>';
         echo '</p></div>';
-    });
+      });
 
       /**
        * Check if the user wants to remove the images from the server.
@@ -108,11 +108,11 @@ class s3MediaOffloader
 
       return $url;
     } catch (S3Exception $e) {
-                add_action('admin_notices', function () use ($e) {
-                  echo '<div class="notice notice-error is-dismissible"><p>';
-                  echo 'Error offloading: ' . esc_html($e->getMessage());
-                  echo '</p></div>';
-              });
+      add_action('admin_notices', function () use ($e) {
+        echo '<div class="notice notice-error is-dismissible"><p>';
+        echo 'Error offloading: ' . esc_html($e->getMessage());
+        echo '</p></div>';
+      });
       error_log('wps3 Error uploading file to S3: ' . $e->getMessage());
       error_log($e);
       error_log($e->getMessage());
@@ -145,6 +145,31 @@ class s3MediaOffloader
         error_log('wps3 Error deleting file from S3: ' . $e->getMessage());
       }
     }
+  }
+
+
+  /**
+   * Get a batch of images without 's3_url' post meta.
+   *
+   * @param int $batch_size The number of images to retrieve.
+   * @param int $offset The offset for retrieving images.
+   *
+   * @return array|null List of image objects or null if no images found.
+   */
+  public function listMissingImagesBatch($batch_size, $offset)
+  {
+    global $wpdb;
+
+    $query = $wpdb->prepare(
+      "SELECT ID FROM {$wpdb->posts}
+                LEFT JOIN {$wpdb->postmeta} ON ({$wpdb->posts}.ID = {$wpdb->postmeta}.post_id AND {$wpdb->postmeta}.meta_key = 's3_url')
+                WHERE {$wpdb->posts}.post_type = 'attachment' AND {$wpdb->postmeta}.meta_id IS NULL
+                LIMIT %d OFFSET %d",
+      $batch_size,
+      $offset
+    );
+
+    return $wpdb->get_results($query);
   }
 }
 

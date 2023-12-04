@@ -18,33 +18,14 @@ if (defined('WP_CLI') && WP_CLI) {
     class s3MediaOffloaderCLI extends WP_CLI_Command
     {
 
+        private $mediaOffloader;
         private $s3Client;
-        private $offloader;
 
         public function __construct()
         {
-            $options = get_option('wps3_image_offloader');
-            $bucket_name = $options['wps3_bucket_name'];
-            $bucket_region = $options['wps3_bucket_region'];
-            $aws_key = $options['wps3_aws_key'];
-            $aws_secret = $options['wps3_aws_secret'];
-            $s3Path = 'images/';
-
-            if (empty($bucket_region) || empty($bucket_name) || empty($aws_key) || empty($aws_secret)) {
-                error_log('wps3 Error: Missing bucket region, bucket name, aws key or aws secret. Please check your settings.');
-                return false;
-            }
-
-            $this->s3Client = new S3Client([
-                'region' => $bucket_region,
-                'version' => 'latest',
-                'credentials' => [
-                    'key' => $aws_key,
-                    'secret' => $aws_secret
-                ],
-            ]);
-
-            $this->offloader = new s3MediaOffloader($this->s3Client, $bucket_name, $s3Path);
+            $offloaderClass = new s3MediaOffloaderInit();
+            $this->mediaOffloader = $offloaderClass->init();
+            if(!$this->mediaOffloader) return;
         }
         /**
          * WP CLI COMMAND
@@ -58,14 +39,15 @@ if (defined('WP_CLI') && WP_CLI) {
 
 
             do {
+
                 // Get a batch of images without 's3_url' post meta.
-                $images = $this->list_missing_images_batch($batch_size, $offset);
+                $images = $this->mediaOffloader->listMissingImagesBatch($batch_size, $offset);
 
                 if (!empty($images)) {
                     // Log the IDs of the images.
                     foreach ($images as $image) {
                         WP_CLI::log("Image ID: {$image->ID}");
-                        $this->offloader->offloadMedia($image->ID);
+                        $this->mediaOffloader->offloadMedia($image->ID);
                     }
                     $offset += $batch_size;
                 } else {
@@ -76,30 +58,6 @@ if (defined('WP_CLI') && WP_CLI) {
                 WP_CLI::log("Sleep for {$timeout}s, so we dont go full hiroshima on the server");
                 sleep($timeout);
             } while (!empty($images));
-        }
-
-        /**
-         * Get a batch of images without 's3_url' post meta.
-         *
-         * @param int $batch_size The number of images to retrieve.
-         * @param int $offset The offset for retrieving images.
-         *
-         * @return array|null List of image objects or null if no images found.
-         */
-        private function list_missing_images_batch($batch_size, $offset)
-        {
-            global $wpdb;
-
-            $query = $wpdb->prepare(
-                "SELECT ID FROM {$wpdb->posts}
-                LEFT JOIN {$wpdb->postmeta} ON ({$wpdb->posts}.ID = {$wpdb->postmeta}.post_id AND {$wpdb->postmeta}.meta_key = 's3_url')
-                WHERE {$wpdb->posts}.post_type = 'attachment' AND {$wpdb->postmeta}.meta_id IS NULL
-                LIMIT %d OFFSET %d",
-                $batch_size,
-                $offset
-            );
-
-            return $wpdb->get_results($query);
         }
 
         /**
@@ -128,8 +86,7 @@ if (defined('WP_CLI') && WP_CLI) {
             $wpdb->query("CREATE TEMPORARY TABLE tmp_post_ids AS
                 SELECT post_id
                 FROM {$wpdb->postmeta}
-                WHERE meta_key = '_wp_attached_file'
-                AND meta_value LIKE '%-scaled%';");
+                WHERE meta_key = 's3_url';");
 
             // Delete records from wp_postmeta using a join with the temporary table
             $query = "

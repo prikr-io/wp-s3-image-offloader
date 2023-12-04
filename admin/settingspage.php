@@ -180,7 +180,7 @@ class WpImageOffloader
   {
   }
   public function wps3_image_offloader_developer_section_info()
-  {
+  { 
     echo '<p>Available WP CLI commands</p>';
     if (!defined('WPS3_CLI_COMMAND')) {
       echo '<p>Offloading is not activated. Activate offloading to show the WP CLI commands.</p>';
