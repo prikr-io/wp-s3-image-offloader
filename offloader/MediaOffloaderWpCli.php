@@ -82,20 +82,11 @@ if (defined('WP_CLI') && WP_CLI) {
                 WP_CLI::line('Running in dry-run mode. No records will be deleted.');
             }
 
-            // Create a temporary table to store post_ids to delete
-            $wpdb->query("CREATE TEMPORARY TABLE tmp_post_ids AS
-                SELECT post_id
-                FROM {$wpdb->postmeta}
-                WHERE meta_key = 's3_url';");
-
-            // Delete records from wp_postmeta using a join with the temporary table
-            $query = "
-                DELETE pm
-                FROM {$wpdb->postmeta} pm
-                INNER JOIN tmp_post_ids tmp
-                ON pm.post_id = tmp.post_id
-                WHERE pm.meta_key = 's3_url';
-            ";
+            $dbquery = $this->mediaOffloader->queryToDeleteAllS3Meta();
+            $query = $dbquery->query;
+            $temp_table = $dbquery->temp_table;
+            WP_CLI::line('Temp table: ' . $temp_table);
+            
 
             if ($dry_run) {
                 WP_CLI::line('Dry run query: ' . $query);
@@ -105,7 +96,7 @@ if (defined('WP_CLI') && WP_CLI) {
             }
 
             // Drop the temporary table
-            $wpdb->query('DROP TEMPORARY TABLE IF EXISTS tmp_post_ids;');
+            $wpdb->query("DROP TEMPORARY TABLE IF EXISTS $temp_table;");
         }
     }
 
