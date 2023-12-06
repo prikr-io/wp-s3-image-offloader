@@ -1,8 +1,8 @@
 <?php
 
-class WP_s3Media_Request extends WP_Async_Request {
+class s3MediaOffloaderBatchProcessingRequest extends WP_Async_Request {
 
-	use WP_s3Media_Logger;
+	use s3MediaOffloaderBatchProcessingLogger;
 
 	/**
 	 * @var string

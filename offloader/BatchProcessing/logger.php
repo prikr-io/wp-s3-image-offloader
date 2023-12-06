@@ -1,6 +1,6 @@
 <?php
 
-trait WP_s3Media_Logger
+trait s3MediaOffloaderBatchProcessingLogger
 {
 
 	/**
