@@ -37,6 +37,7 @@ class s3MediaOffloaderInit {
         $this->s3Client = new S3Client([
             'region' => $bucket_region,
             'version' => 'latest',
+            'use_aws_shared_config_files' => false,
             'credentials' => [
                 'key' => $aws_key,
                 'secret' => $aws_secret

@@ -171,6 +171,38 @@ class s3MediaOffloader
 
     return $wpdb->get_results($query);
   }
+
+  /**
+   * Query all images that have 's3_url' post meta.
+   */
+  public function queryToDeleteAllS3Meta()
+  {
+    global $wpdb;
+    $temp_table = 'tmp_post_ids';
+    // Create a temporary table to store post_ids to delete
+    $wpdb->query(
+      "CREATE TEMPORARY TABLE {$temp_table} AS
+      SELECT post_id
+      FROM {$wpdb->postmeta}
+      WHERE meta_key = 's3_url';"
+    );
+
+    // Delete records from wp_postmeta using a join with the temporary table
+    $query = "
+        DELETE pm
+        FROM {$wpdb->postmeta} pm
+        INNER JOIN {$temp_table} tmp
+        ON pm.post_id = tmp.post_id
+        WHERE pm.meta_key = 's3_url';
+    ";
+
+    // return both the tmp_post_ids and the query
+    $output = new stdClass;
+    $output->temp_table = $temp_table;
+    $output->query = $query;
+
+    return $output;
+  }
 }
 
 
@@ -184,25 +216,9 @@ class s3MediaOffloader
 add_action('after_setup_theme', 'init_mediaoffloader_class');
 function init_mediaoffloader_class()
 {
-  $options = get_option('wps3_image_offloader');
-  $bucket_name = $options['wps3_bucket_name'];
-  $bucket_region = $options['wps3_bucket_region'];
-  $aws_key = $options['wps3_aws_key'];
-  $aws_secret = $options['wps3_aws_secret'];
-  $s3Path = 'images/';
-
-  if ($bucket_region && $bucket_name && $aws_key && $aws_secret) {
-    $s3Client = new S3Client([
-      'region' => $bucket_region,
-      'version' => 'latest',
-      'use_aws_shared_config_files' => false,
-      'credentials' => [
-        'key' => $aws_key,
-        'secret' => $aws_secret
-      ],
-    ]);
-
-    $offloader = new s3MediaOffloader($s3Client, $bucket_name, $s3Path);
-    $offloader->init();
-  }
+  $offloaderClass = new s3MediaOffloaderInit();
+  $init = $offloaderClass->init();
+  if (!$init) {
+    error_log('wps3 Error: Could not initialize s3MediaOffloaderInit class.');
+  };
 }
