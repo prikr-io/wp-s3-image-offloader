@@ -83,7 +83,7 @@ class s3CustomSizes
             $height = !empty($attributes['s3height']) ? $attributes['s3height'] : null;
             $attributes['src'] = $this->replaceImageUrl($imageUrl, $width, $height);
 
-            $attributes['srcset'] = $this->replaceImageUrl($imageUrl, $width, $height, 2) . ' 2x, ' . $this->replaceImageUrl($imageUrl, $width, $height, 3) . ' 3x';
+            $attributes['srcset'] = $this->replaceImageUrl($imageUrl, $width, $height, 2) . ' 2x';
         } else {
             // If the s3 image sizes are not set, we want to get the original image size and set it as the s3 image size.
             $thumbnail_image = wp_get_attachment_image_src($attachment->ID, $size);
@@ -91,7 +91,7 @@ class s3CustomSizes
                 $width = $thumbnail_image[1];
                 $height = $thumbnail_image[2];
                 $attributes['src'] = $this->replaceImageUrl($imageUrl, $width, $height);
-                $attributes['srcset'] = $this->replaceImageUrl($imageUrl, $width, $height, 2) . ' 2x, ' . $this->replaceImageUrl($imageUrl, $width, $height, 3) . ' 3x';
+                $attributes['srcset'] = $this->replaceImageUrl($imageUrl, $width, $height, 2) . ' 2x';
             }
         }
         return $attributes;
