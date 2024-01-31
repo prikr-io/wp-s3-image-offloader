@@ -64,6 +64,11 @@ class s3MediaOffloader
   {
 
     try {
+      $mime_type = get_post_mime_type($attachment_id);
+      if ($mime_type == 'image/gif') {
+        error_log('wps3 GIF detected, not offloading...');
+        return false;
+      }
       if (!is_readable($file_path)) {
         error_log('wps3 File does not exist: ' . $file_path);
         return false;
@@ -217,7 +222,7 @@ add_action('after_setup_theme', 'init_mediaoffloader_class');
 function init_mediaoffloader_class()
 {
   $offloaderClass = new s3MediaOffloaderInit();
-  $init = $offloaderClass->init();
+  $init = $offloaderClass;
   if (!$init) {
     error_log('wps3 Error: Could not initialize s3MediaOffloaderInit class.');
   };
