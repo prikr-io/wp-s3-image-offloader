@@ -43,9 +43,9 @@ define('WPS3_BASENAME', plugin_basename(__FILE__));
 require_once(__DIR__ . '/admin/mediaSettings.php');
 
 // Offload images on upload
-require_once(__DIR__ . '/offloader/MediaOffloaderClass.php');
-// Offload images on upload
 require_once(__DIR__ . '/offloader/MediaOffloaderInit.php');
+// Offload images on upload
+require_once(__DIR__ . '/offloader/MediaOffloaderClass.php');
 // Offload images using the CLI
 require_once(__DIR__ . '/offloader/MediaOffloaderWpCli.php');
 // Offload single images via the Admin screen

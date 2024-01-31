@@ -45,6 +45,7 @@ class s3MediaOffloaderInit {
         ]);
 
         $this->offloader = new s3MediaOffloader($this->s3Client, $bucket_name, $s3Path);
+        $this->offloader->init();
         return $this->offloader;
     }
 }
