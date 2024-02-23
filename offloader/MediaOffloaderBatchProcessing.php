@@ -37,7 +37,6 @@ class s3MediaOffloaderBatchProcessing
 	 */
 	public function admin_actions()
 	{
-		error_log('wps3 MediaOffloaderBatchProcessing admin_actions');
 		// Check if the current page is the desired admin page
 		if (!isset($_GET['page']) || $_GET['page'] !== 'image-offloader') {
 			return;
@@ -137,7 +136,6 @@ class s3MediaOffloaderBatchProcessing
 	 */
 	protected function handle_all()
 	{
-		error_log('wps3 MediaOffloaderBatchProcessing handle_all');
 
 		$items = $this->get_items();
 		$this->itemCount = count($items);
