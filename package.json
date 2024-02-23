@@ -1,6 +1,6 @@
 {
   "name": "prikr-image-offloader",
-  "version": "2.6.6",
+  "version": "2.6.7",
   "description": "### TODO:",
   "main": "index.js",
   "scripts": {

@@ -11,11 +11,32 @@ if (!defined('ABSPATH')) exit; // Exit if accessed directly
 require 'vendor/autoload.php';
 
 use Aws\S3\S3Client;
+use Aws\Credentials\Credentials;
+use GuzzleHttp\Promise\Promise;
 
 class s3MediaOffloaderSingleItem
 {
     private $s3Client;
     private $offloader;
+
+    private function custom_wp_database_credentials_provider()
+    {
+        return function () {
+            $promise = new Promise(function () use (&$promise) {
+                $options = get_option('wps3_image_offloader');
+                $aws_key = $options['wps3_aws_key'];
+                $aws_secret = $options['wps3_aws_secret'];
+
+                if (empty($aws_key) || empty($aws_secret)) {
+                    $promise->reject('AWS credentials are not set in the WP database.');
+                } else {
+                    $promise->resolve(new Credentials($aws_key, $aws_secret));
+                }
+            });
+
+            return $promise;
+        };
+    }
 
     public function __construct()
     {
@@ -25,21 +46,18 @@ class s3MediaOffloaderSingleItem
         $aws_key = $options['wps3_aws_key'];
         $aws_secret = $options['wps3_aws_secret'];
         $s3Path = 'images/';
-     
+
         if (empty($bucket_region) || empty($bucket_name) || empty($aws_key) || empty($aws_secret)) {
             error_log('wps3 Error: Missing bucket region, bucket name, aws key, or aws secret. Please check your settings.');
             return false;
         }
-     
+
         $this->s3Client = new S3Client([
             'region' => $bucket_region,
             'version' => 'latest',
-            'credentials' => [
-                'key' => $aws_key,
-                'secret' => $aws_secret
-            ],
+            'credentials' => $this->custom_wp_database_credentials_provider()
         ]);
-     
+
         $this->offloader = new s3MediaOffloader($this->s3Client, $bucket_name, $s3Path);
 
         // Hook the function to run on admin_init
