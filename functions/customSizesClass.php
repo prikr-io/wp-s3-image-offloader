@@ -66,9 +66,14 @@ class s3CustomSizes
      */
     function alwaysReturnFullImageSrc($image, $attachment_id, $size, $icon)
     {
-        // TODO perhaps use an WP function instead of a regex..
-        $dimensionsPattern = '/-\d+x\d+(?=\.[a-zA-Z]+$)/i';
-        $image[0] = preg_replace($dimensionsPattern, '', $image[0]);
+        if (is_array($image) && isset($image[0])) {
+            // TODO perhaps use an WP function instead of a regex..
+            $dimensionsPattern = '/-\d+x\d+(?=\.[a-zA-Z]+$)/i';
+            // Zorg ervoor dat $image[0] een string is voordat preg_replace wordt toegepast
+            if (is_string($image[0])) {
+                $image[0] = preg_replace($dimensionsPattern, '', $image[0]);
+            }
+        }
         return $image;
     }
 
@@ -87,7 +92,7 @@ class s3CustomSizes
         } else {
             // If the s3 image sizes are not set, we want to get the original image size and set it as the s3 image size.
             $thumbnail_image = wp_get_attachment_image_src($attachment->ID, $size);
-            if ($thumbnail_image) {
+            if ($thumbnail_image && is_array($thumbnail_image) && count($thumbnail_image) >= 3) {
                 $width = $thumbnail_image[1];
                 $height = $thumbnail_image[2];
                 $attributes['src'] = $this->replaceImageUrl($imageUrl, $width, $height);
