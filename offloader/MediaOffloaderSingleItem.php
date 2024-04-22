@@ -52,6 +52,13 @@ class s3MediaOffloaderSingleItem
             return false;
         }
 
+        /**
+         * Disable AWS looking for the '/.aws/config' file which gives a million notices: is_readable(): open_basedir restriction in effect
+         * This is a dirty hack, but it works.
+         * @see https://github.com/aws/aws-sdk-php/issues/1931
+         */
+        putenv('AWS_CONFIG_FILE='.__DIR__.'/fakeConfigFile.ini');
+
         $this->s3Client = new S3Client([
             'region' => $bucket_region,
             'version' => 'latest',
