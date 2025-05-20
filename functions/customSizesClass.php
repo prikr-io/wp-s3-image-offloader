@@ -24,15 +24,24 @@ class s3CustomSizes
         add_filter('image_downsize', [$this, 'disableImageDownsize'], 11, 3);
         add_filter('wp_prepare_attachment_for_js', [$this, 'replaceAttachmentUrlsForJSimages'], 10, 3);
         add_filter('wp_calculate_image_srcset', [$this, 'overrideSrcset'], 10, 5);
-        add_filter('admin_post_thumbnail_html', function ($content, $post_id, $thumbnail_id) {
-            $url = wp_get_attachment_url($thumbnail_id);
-            $s3 = get_post_meta($thumbnail_id, 's3_url', true);
-            if ($s3) {
-                $thumb_url = (new s3CustomSizes)->replaceImageUrl($s3, 150, 150); // bijv. thumbnail
-                $content = str_replace($url, $thumb_url, $content);
-            }
-            return $content;
-        }, 10, 3);
+        add_filter('admin_post_thumbnail_html', [$this, 'filterAdminPostThumbnailHtml'], 10, 3);
+    }
+
+    /**
+     * Filter the admin post thumbnail HTML to add the S3 URL as a data attribute.
+     * This will allow us to use the S3 URL in the media library.
+     */
+    public function filterAdminPostThumbnailHtml($content, $post_id, $thumbnail_id)
+    {
+        $url = wp_get_attachment_url($thumbnail_id);
+        $s3  = get_post_meta($thumbnail_id, 's3_url', true);
+
+        if ($s3) {
+            $thumb_url = $this->replaceImageUrl($s3, 150, 150);
+            $content = str_replace($url, $thumb_url, $content);
+        }
+
+        return $content;
     }
 
     /**
@@ -152,20 +161,20 @@ class s3CustomSizes
      */
     public function replaceImageUrl($originalUrl, $width, $height, $dpr = 1)
     {
-        if (empty($this->bucketName)) {
+        $options = get_option('wps3_image_offloader');
+        $bucketName = isset($options['wps3_bucket_name']) ? $options['wps3_bucket_name'] : '';
+
+        if (empty($bucketName)) {
             return $originalUrl;
         }
 
-        $width = $width * $dpr;
-        $height = $height * $dpr;
-
+        $width *= $dpr;
+        $height *= $dpr;
 
         $pattern = '/^https:\/\/(.+?)\/images\/(.+)$/i';
-        $replacement = "https://{$this->bucketName}/fit-in/filters:no_upscale()/{$width}x{$height}/images/$2";
+        $replacement = "https://{$bucketName}/fit-in/filters:no_upscale()/{$width}x{$height}/images/$2";
 
-        $resizedUrl = preg_replace($pattern, $replacement, $originalUrl);
-
-        return $resizedUrl;
+        return preg_replace($pattern, $replacement, $originalUrl);
     }
 
     /**
