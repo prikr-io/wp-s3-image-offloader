@@ -23,6 +23,50 @@ class s3CustomSizes
         add_filter('wp_get_attachment_image_attributes', [$this, 'buildImageAttributes'], 6, 3);
         add_filter('image_downsize', [$this, 'disableImageDownsize'], 11, 3);
         add_filter('wp_prepare_attachment_for_js', [$this, 'replaceAttachmentUrlsForJSimages'], 10, 3);
+        add_filter('wp_calculate_image_srcset', [$this, 'overrideSrcset'], 10, 5);
+        add_filter('admin_post_thumbnail_html', function ($content, $post_id, $thumbnail_id) {
+            $url = wp_get_attachment_url($thumbnail_id);
+            $s3 = get_post_meta($thumbnail_id, 's3_url', true);
+            if ($s3) {
+                $thumb_url = (new s3CustomSizes)->replaceImageUrl($s3, 150, 150); // bijv. thumbnail
+                $content = str_replace($url, $thumb_url, $content);
+            }
+            return $content;
+        }, 10, 3);
+    }
+
+    /**
+     * Override the srcset attribute for images in the media library.
+     * This will replace the srcset with the S3 URL and the respective width and height values.
+     * This is important for responsive images, as the srcset attribute is used to load different image sizes based on the screen size.
+     * @param array $sources
+     * @param array $size_array
+     * @param string $image_src
+     * @param array $image_meta
+     * @param int $attachment_id
+     */
+    public function overrideSrcset($sources, $size_array, $image_src, $image_meta, $attachment_id)
+    {
+        $s3_url = get_post_meta($attachment_id, 's3_url', true);
+        if (!$s3_url || empty($image_meta['sizes'])) {
+            return $sources;
+        }
+
+        $new_sources = [];
+
+        foreach ($image_meta['sizes'] as $size_name => $size_info) {
+            $width = $size_info['width'];
+            $height = $size_info['height'];
+            $url = $this->replaceImageUrl($s3_url, $width, $height);
+
+            $new_sources[$width] = [
+                'url'        => $url,
+                'descriptor' => 'w',
+                'value'      => $width,
+            ];
+        }
+
+        return $new_sources;
     }
 
     /**
@@ -131,14 +175,28 @@ class s3CustomSizes
      */
     public function disableImageDownsize($downsize, $attachment_id, $size)
     {
-        // Check if the $size attribute is array. So only run on [400, 600] and not on 'thumbnail' or 'medium_large' etc.
-        if (isset($size) && is_array($size)) {
-            // Return the original image data without downsizing
-            $original_image_url = wp_get_attachment_url($attachment_id);
-            $downsize = array($original_image_url, $size[0], $size[1], false);
+        // Bepaal de originele URL
+        $original_image_url = wp_get_attachment_url($attachment_id);
+
+        // Als het een array is (zoals [400, 300]) → zoals je al had
+        if (is_array($size)) {
+            return [$original_image_url, $size[0], $size[1], false];
         }
 
-        return $downsize;
+        // Als het een string is (zoals 'thumbnail', 'medium' etc.)
+        if (is_string($size)) {
+            $image_meta = wp_get_attachment_metadata($attachment_id);
+            if (!isset($image_meta['sizes'][$size])) {
+                return false;
+            }
+
+            $width  = $image_meta['sizes'][$size]['width'];
+            $height = $image_meta['sizes'][$size]['height'];
+
+            return [$this->replaceImageUrl($original_image_url, $width, $height), $width, $height, false];
+        }
+
+        return false;
     }
 }
 
