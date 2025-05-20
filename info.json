@@ -1,7 +1,7 @@
 {
   "name": "Prikr Image offloader",
   "slug": "prikr-image-offloader",
-  "version": "2.7.0",
+  "version": "2.7.1",
   "author": "<a href='https://prikr.io' target='_blank'>Prikr</a>",
   "author_profile": "http://prikr.io",
   "contributors": {
@@ -12,7 +12,7 @@
   "requires": "3.0",
   "tested": "5.8",
   "requires_php": "5.3",
-  "last_updated": "2025-05-20 16:17:00",
+  "last_updated": "2025-05-20 14:20:55",
   "banners": {
     "low": "https://prikr.io/wp-content/uploads/updater/banner-772x250.jpg",
     "high": "https://prikr.io/wp-content/uploads/updater/banner-1544x500.jpg"
