@@ -1,0 +1,29 @@
+name: Release new plugin version
+on:
+  push:
+    branches: [master]
+  pull_request:
+    types: [closed]
+    branches: [master]
+jobs:
+  web-deploy:
+    name: 🎉 Deploy to development server
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v3
+
+      - name: 🛠 Building ZIP file
+        run: |
+          rsync -av --progress . ./prikr-image-offloader --exclude prikr-image-offloader
+          zip -r prikr-image-offloader.zip prikr-image-offloader
+
+      - name: 📂 Sync files
+        uses: SamKirkland/web-deploy@v1
+        with:
+          target-server: ${{ vars.PRIKR_IP }}
+          remote-user: ${{ vars.SSH_USERNAME }}
+          private-ssh-key: ${{ secrets.PRIVATE_RSA_KEY }}
+          ssh-port: ${{ vars.PRIKR_PORT }}
+          destination-path: ~/domains/prikr.io/public_html/plugin/prikr-image-offloader/
+          rsync-options: --delete-after --recursive --itemize-changes --exclude=admin/ --exclude=offloader/ --exclude=updater/ --exclude=prikr-image-offloader.php --exclude==README.md --exclude=.git*/** --exclude=.git* --exclude=**/.git*/**  --exclude=.gitignore
