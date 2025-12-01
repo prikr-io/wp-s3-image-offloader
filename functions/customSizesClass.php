@@ -31,14 +31,97 @@ class s3CustomSizes
         add_filter('wp_get_attachment_image_src', [$this, 'alwaysReturnFullImageSrc'], 10, 4);
         add_filter('wp_get_attachment_image_attributes', [$this, 'buildImageAttributes'], 6, 3);
         add_filter('image_downsize', [$this, 'disableImageDownsize'], 11, 3);
-        add_filter('wp_prepare_attachment_for_js', [$this, 'replaceAttachmentUrlsForJSimages'], 10, 3);
+        add_filter('wp_prepare_attachment_for_js', [$this, 'replaceAttachmentUrlsForJSimages'], PHP_INT_MAX, 3);
         add_filter('wp_calculate_image_srcset', [$this, 'overrideSrcset'], 10, 5);
         add_filter('admin_post_thumbnail_html', [$this, 'filterAdminPostThumbnailHtml'], 10, 3);
+        add_filter('rest_prepare_attachment', [$this, 'filterRestAttachmentResponse'], 10, 3);
         if ($this->enablePlaceholders) {
             add_action('wp_enqueue_scripts', [$this, 'enqueueProgressiveImageScript']);
             add_action('wp_head', [$this, 'outputLqipStyles'], 20);
         }
         add_action('wp_head', [$this, 'outputPreconnectTag'], 1);
+        add_action('admin_enqueue_scripts', [$this, 'enqueueMediaLibraryScript']);
+    }
+
+    /**
+     * Ensure the media library UI does not append the WordPress generated size suffixes.
+     */
+    public function enqueueMediaLibraryScript($hook)
+    {
+        $supportedScreens = [
+            'upload.php',
+            'media-new.php',
+            'post.php',
+            'post-new.php',
+            'site-editor.php',
+            'widgets.php',
+            'customize.php',
+        ];
+
+        if (!in_array($hook, $supportedScreens, true)) {
+            return;
+        }
+
+        $handle = 'prikr-image-offloader-media-cleanup';
+        if (wp_script_is($handle, 'enqueued')) {
+            return;
+        }
+
+        if (!did_action('wp_enqueue_media')) {
+            wp_enqueue_media();
+        }
+
+        wp_register_script($handle, '', [], null, true);
+        wp_enqueue_script($handle);
+
+        $script = <<<'JS'
+(function (window) {
+    if (!window.wp || !wp.media || !wp.media.model || !wp.media.model.Attachment) {
+        return;
+    }
+
+    var dimensionPattern = /-\d+x\d+(?=\.[a-zA-Z]+$)/i;
+
+    var sanitizeUrl = function (url) {
+        if (typeof url !== 'string' || !url) {
+            return url;
+        }
+        return url.replace(dimensionPattern, '');
+    };
+
+    var originalToJSON = wp.media.model.Attachment.prototype.toJSON;
+    wp.media.model.Attachment.prototype.toJSON = function () {
+        var data = originalToJSON.apply(this, arguments);
+        if (!data) {
+            return data;
+        }
+
+        if (data.url) {
+            data.url = sanitizeUrl(data.url);
+        }
+        if (data.icon) {
+            data.icon = sanitizeUrl(data.icon);
+        }
+        if (data.image && data.image.src) {
+            data.image.src = sanitizeUrl(data.image.src);
+        }
+        if (data.size && data.size.url) {
+            data.size.url = sanitizeUrl(data.size.url);
+        }
+        if (data.sizes) {
+            Object.keys(data.sizes).forEach(function (key) {
+                if (data.sizes[key] && data.sizes[key].url) {
+                    data.sizes[key].url = sanitizeUrl(data.sizes[key].url);
+                }
+            });
+        }
+
+        return data;
+    };
+})(window);
+JS;
+
+        wp_add_inline_script($handle, $script);
     }
 
     /**
@@ -113,10 +196,10 @@ class s3CustomSizes
         if ($attachment_id) {
             $s3_url = get_post_meta($attachment_id, 's3_url', true);
             if ($s3_url) {
-                $url = $s3_url;
+                $url = $this->forceHttpsScheme($s3_url);
             }
         }
-        return $url;
+        return $this->forceHttpsScheme($url);
     }
 
     /**
@@ -126,15 +209,85 @@ class s3CustomSizes
     public function replaceAttachmentUrlsForJSimages($response, $attachment, $meta)
     {
         $s3_url = get_post_meta($attachment->ID, 's3_url', true);
-        if (!empty($s3_url)) {
-            foreach ($response['sizes'] as $key => $size) {
-                $response['sizes'][$key]['url'] = $this->replaceImageUrl($size['url'], $size['width'], $size['height']);
-                // It is important to remove the dimensions from the URL, as LAST. Else JS will take over and add the dimensions again.
-                $dimensionsPattern = '/-\d+x\d+(?=\.[a-zA-Z]+$)/i';
-                $response['sizes'][$key]['url'] = preg_replace($dimensionsPattern, '', $response['sizes'][$key]['url']);
-            }
+        if (empty($s3_url) || !is_array($response)) {
             return $response;
         }
+
+        if (isset($response['sizes']) && is_array($response['sizes'])) {
+            foreach ($response['sizes'] as $key => $size) {
+                if (!isset($response['sizes'][$key]['url'])) {
+                    continue;
+                }
+
+                $response['sizes'][$key]['url'] = $this->forceHttpsScheme(
+                    $this->stripDimensionsFromUrl($response['sizes'][$key]['url'])
+                );
+            }
+        }
+
+        if (isset($response['image']['src']) && is_string($response['image']['src'])) {
+            $response['image']['src'] = $this->forceHttpsScheme(
+                $this->stripDimensionsFromUrl($response['image']['src'])
+            );
+        }
+
+        if (isset($response['icon']) && is_string($response['icon'])) {
+            $response['icon'] = $this->forceHttpsScheme(
+                $this->stripDimensionsFromUrl($response['icon'])
+            );
+        }
+
+        if (isset($response['url']) && is_string($response['url'])) {
+            $response['url'] = $this->forceHttpsScheme(
+                $this->stripDimensionsFromUrl($response['url'])
+            );
+        }
+
+        return $response;
+    }
+
+    /**
+     * Clean up attachment URLs that are exposed via the REST API (used by Gutenberg/library modals).
+     */
+    public function filterRestAttachmentResponse($response, $post, $request)
+    {
+        if (!class_exists('WP_REST_Response') || !($response instanceof WP_REST_Response)) {
+            return $response;
+        }
+
+        $data = $response->get_data();
+        $modified = false;
+
+        if (isset($data['media_details'], $data['media_details']['sizes']) && is_array($data['media_details']['sizes'])) {
+            foreach ($data['media_details']['sizes'] as $sizeKey => $sizeData) {
+                if (!isset($sizeData['source_url']) || !is_string($sizeData['source_url'])) {
+                    continue;
+                }
+
+                $clean = $this->forceHttpsScheme(
+                    $this->stripDimensionsFromUrl($sizeData['source_url'])
+                );
+                if ($clean !== $sizeData['source_url']) {
+                    $data['media_details']['sizes'][$sizeKey]['source_url'] = $clean;
+                    $modified = true;
+                }
+            }
+        }
+
+        if (isset($data['source_url']) && is_string($data['source_url'])) {
+            $clean = $this->forceHttpsScheme(
+                $this->stripDimensionsFromUrl($data['source_url'])
+            );
+            if ($clean !== $data['source_url']) {
+                $data['source_url'] = $clean;
+                $modified = true;
+            }
+        }
+
+        if ($modified) {
+            $response->set_data($data);
+        }
+
         return $response;
     }
 
@@ -262,7 +415,48 @@ class s3CustomSizes
             $calculatedHeight
         );
 
-        return preg_replace($pattern, $replacement, $originalUrl);
+        $replaced = preg_replace($pattern, $replacement, $originalUrl);
+
+        if ($replaced === null) {
+            $replaced = $originalUrl;
+        }
+
+        return $this->forceHttpsScheme($replaced);
+    }
+
+    /**
+     * Strip "-300x200" style suffixes from attachment URLs so they resolve to the original file.
+     */
+    private function stripDimensionsFromUrl($url)
+    {
+        if (!is_string($url) || $url === '') {
+            return $url;
+        }
+
+        $clean = preg_replace('/-\d+x\d+(?=\.[a-zA-Z]+$)/i', '', $url);
+
+        return $clean === null ? $url : $clean;
+    }
+
+    /**
+     * Force URLs to use HTTPS even if the stored value contains HTTP or protocol-relative schemes.
+     */
+    private function forceHttpsScheme($url)
+    {
+        if (!is_string($url) || $url === '') {
+            return $url;
+        }
+
+        if (strpos($url, '//') === 0) {
+            return 'https:' . $url;
+        }
+
+        $normalized = set_url_scheme($url, 'https');
+        if (is_string($normalized) && $normalized !== '') {
+            return $normalized;
+        }
+
+        return $url;
     }
 
     /**
@@ -396,10 +590,7 @@ class s3CustomSizes
      */
     private function detectBucketScheme($bucketName)
     {
-        if (preg_match('#^(https?):\/\/#i', $bucketName, $matches)) {
-            return strtolower($matches[1]);
-        }
-
+        // Force HTTPS even when the configured bucket value contains an http scheme.
         return 'https';
     }
 
